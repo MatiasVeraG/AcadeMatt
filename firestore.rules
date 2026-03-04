@@ -1,0 +1,110 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    function isTutor() {
+      return isAuthenticated() && getUserRole() == 'tutor';
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && getUserRole() == 'student';
+    }
+    
+    // USERS COLLECTION
+    match /users/{userId} {
+      // Leer: propietario, admins, y tutores (para asignación)
+      allow read: if isOwner(userId) || isAdmin() || isTutor();
+      
+      // Crear: solo durante signup con rol 'student'
+      allow create: if isOwner(userId) 
+                    && request.resource.data.role == 'student'
+                    && request.resource.data.email == request.auth.token.email;
+      
+      // Actualizar: propietario (excepto rol) o admin (todo)
+      allow update: if (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+                    || isAdmin();
+      
+      // Eliminar: solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // CONVERSATIONS COLLECTION
+    match /conversations/{conversationId} {
+      // Leer: participantes o admin
+      allow read: if isAuthenticated() && (
+        resource.data.studentId == request.auth.uid ||
+        resource.data.tutorId == request.auth.uid ||
+        isAdmin()
+      );
+      
+      // Crear: solo estudiantes, con status 'pending' y sin tutor asignado
+      allow create: if isAuthenticated() 
+                    && isStudent()
+                    && request.resource.data.studentId == request.auth.uid
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.tutorId == null;
+      
+      // Actualizar: asignación de tutor, cambio de status por tutor, o admin
+      allow update: if isAuthenticated() && (
+        // Permitir asignación automática de tutor (de pending a assigned)
+        (resource.data.status == 'pending' && 
+         request.resource.data.status == 'assigned' &&
+         request.resource.data.tutorId != null) ||
+        // Estudiante dueño puede actualizar (ej: marcar como completada)
+        (resource.data.studentId == request.auth.uid) ||
+        // Tutor asignado puede cambiar status
+        (resource.data.tutorId == request.auth.uid && isTutor()) ||
+        // Admin puede todo
+        isAdmin()
+      );
+      
+      // Eliminar: solo admins
+      allow delete: if isAdmin();
+      
+      // MESSAGES SUBCOLLECTION
+      match /messages/{messageId} {
+        // Leer: participantes de la conversación
+        allow read: if isAuthenticated() && (
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.studentId == request.auth.uid ||
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId == request.auth.uid ||
+          isAdmin()
+        );
+        
+        // Crear: mensajes del sistema o participantes
+        allow create: if isAuthenticated() && (
+          // Mensajes del sistema (asignación automática)
+          (request.resource.data.senderId == 'system' && request.resource.data.senderRole == 'system') ||
+          // Mensajes de participantes
+          (request.resource.data.senderId == request.auth.uid &&
+          (
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.studentId == request.auth.uid ||
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId == request.auth.uid
+          ))
+        );
+        
+        // Actualizar: nadie (mensajes inmutables)
+        allow update: if false;
+        
+        // Eliminar: solo admins
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}
