@@ -106,5 +106,35 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
     }
+
+    // OFFERS COLLECTION
+    // Created and updated by the backend server (Firebase Admin SDK).
+    // Frontend needs to listen in real-time; read is allowed to any authenticated
+    // user (Firestore cannot evaluate resource.data in collection queries).
+    match /offers/{offerId} {
+      allow read: if isAuthenticated();
+
+      // Create/Update/Delete: handled exclusively by the backend via Admin SDK.
+      // Deny all client-side writes to prevent tampering with payment data.
+      allow write: if false;
+    }
+
+    // NOTIFICATIONS COLLECTION
+    // Written by the backend webhook handler; read by the recipient user.
+    match /notifications/{notificationId} {
+      // Read: only the notification owner or admin
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+
+      // Mark as read: only the notification owner
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+
+      // Create/Delete: backend only
+      allow create: if false;
+      allow delete: if isAdmin();
+    }
   }
 }

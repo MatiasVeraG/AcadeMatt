@@ -217,83 +217,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Asignar tutor por capacidad (Capacity-Based Assignment)
+  // Asignar tutor por capacidad — delegado al backend (usa Admin SDK)
   const assignTutorByCapacity = async (conversationId) => {
-    try {
-      // Buscar tutores disponibles
-      const tutorsQuery = query(
-        collection(db, 'users'),
-        where('role', '==', 'tutor'),
-        where('available', '==', true)
-      );
-
-      const tutorsSnapshot = await getDocs(tutorsQuery);
-
-      if (tutorsSnapshot.empty) {
-        // No hay tutores disponibles
-        await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-          senderId: 'system',
-          senderName: 'Sistema',
-          senderRole: 'system',
-          text: 'Lo sentimos, no hay tutores disponibles en este momento. Te contactaremos cuando uno esté disponible.',
-          timestamp: new Date().toISOString(),
-          read: false
-        });
-        return;
-      }
-
-      // Contar conversaciones asignadas por tutor
-      const tutorLoads = [];
-
-      for (const tutorDoc of tutorsSnapshot.docs) {
-        const tutorId = tutorDoc.id;
-        const tutorData = tutorDoc.data();
-
-        // Contar conversaciones activas del tutor
-        const assignedConversationsQuery = query(
-          collection(db, 'conversations'),
-          where('tutorId', '==', tutorId),
-          where('status', '==', 'assigned')
-        );
-
-        const assignedConversations = await getDocs(assignedConversationsQuery);
-
-        tutorLoads.push({
-          tutorId: tutorId,
-          tutorName: tutorData.displayName,
-          load: assignedConversations.size
-        });
-      }
-
-      // Ordenar por menor carga
-      tutorLoads.sort((a, b) => a.load - b.load);
-
-      // Seleccionar tutor con menor carga
-      const selectedTutor = tutorLoads[0];
-
-      // Actualizar conversación con tutor asignado
-      await updateDoc(doc(db, 'conversations', conversationId), {
-        tutorId: selectedTutor.tutorId,
-        tutorName: selectedTutor.tutorName,
-        status: 'assigned',
-        assignedAt: new Date().toISOString()
-      });
-
-      // Mensaje de asignación
-      await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-        senderId: 'system',
-        senderName: 'Sistema',
-        senderRole: 'system',
-        text: `¡Excelente! ${selectedTutor.tutorName} ha sido asignado como tu tutor. Te responderá pronto.`,
-        timestamp: new Date().toISOString(),
-        read: false
-      });
-
-      return selectedTutor.tutorId;
-    } catch (error) {
-      console.error('Error asignando tutor:', error);
-      throw error;
+    const token = await currentUser.getIdToken();
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const response = await fetch(`${apiUrl}/api/assign-tutor`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ conversationId }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al asignar tutor');
     }
+    const data = await response.json();
+    return data.tutorId || null;
   };
 
   // Enviar mensaje en una conversación
@@ -387,6 +328,47 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Crear oferta de pago: llama al backend que genera el checkout en Lemon Squeezy
+  // y persiste la oferta en Firestore.
+  const createOffer = async (conversationId, amount, description) => {
+    if (!currentUser) throw new Error('Debes iniciar sesión');
+    if (userRole !== 'tutor' && userRole !== 'admin') {
+      throw new Error('Solo los tutores pueden crear ofertas');
+    }
+
+    const token = await currentUser.getIdToken();
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+    // Fetch conversation to get studentId and subject
+    const convDoc = await getDoc(doc(db, 'conversations', conversationId));
+    if (!convDoc.exists()) throw new Error('Conversación no encontrada');
+    const convData = convDoc.data();
+
+    const response = await fetch(`${apiUrl}/api/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        conversationId,
+        studentId: convData.studentId,
+        tutorId: currentUser.uid,
+        tutorName: currentUser.displayName,
+        amount: parseFloat(amount),
+        description: description || '',
+        subject: convData.subject || 'Asesoría Académica',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+    }
+
+    return response.json(); // { success, offerId, checkoutUrl }
+  };
+
   // Escuchar cambios en autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -416,6 +398,7 @@ export const AuthProvider = ({ children }) => {
     createConversation,
     sendMessage,
     getUserConversations,
+    createOffer,
     loading
   };
 

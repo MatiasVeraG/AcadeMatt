@@ -19,8 +19,13 @@ function App() {
   const [paymentAmount, setPaymentAmount] = useState(25.00);
   const [currentConversationId, setCurrentConversationId] = useState(null);
 
-  const handleShowPaymentModal = () => {
-    setIsPaymentModalOpen(true);
+  const handleShowPaymentModal = (checkoutUrl) => {
+    if (checkoutUrl) {
+      // Open the Lemon Squeezy hosted checkout in a new tab
+      window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      setIsPaymentModalOpen(true);
+    }
   };
 
   const handleClosePaymentModal = () => {
