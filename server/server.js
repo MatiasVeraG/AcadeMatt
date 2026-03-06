@@ -5,6 +5,9 @@ const cors = require('cors');
 const crypto = require('crypto');
 const axios = require('axios');
 const admin = require('firebase-admin');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const validator = require('validator');
 
 // ─── Firebase Admin Initialization ────────────────────────────────────────────
 let serviceAccount;
@@ -30,14 +33,73 @@ const db = admin.firestore();
 // ─── Express Setup ─────────────────────────────────────────────────────────────
 const app = express();
 
+// Security headers (XSS protection, no sniffing, no clickjacking, etc.)
+app.use(helmet());
+
 // Webhook endpoint needs the raw body to validate the HMAC signature —
 // it must be registered BEFORE express.json()
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json());
+
+// Limit JSON body size to prevent payload attacks
+app.use(express.json({ limit: '16kb' }));
+
+// In development allow any localhost port (Vite may auto-assign 5173, 5174, 5175…)
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : null; // null = allow all localhost
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, Postman, server-side)
+    if (!origin) return callback(null, true);
+    // Always allow localhost / 127.0.0.1 on any port in development
+    if (!process.env.FRONTEND_URL && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+    if (allowedOrigins && allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
+
+// ─── Rate Limiters ─────────────────────────────────────────────────────────────
+// General API limit: 60 requests per minute per IP
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intenta en un minuto.' },
+});
+
+// Stricter limit for checkout creation: 10 per 10 minutes per IP
+const checkoutLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Límite de creación de ofertas alcanzado. Intenta en 10 minutos.' },
+});
+
+app.use('/api/', generalLimiter);
+app.use('/api/checkout', checkoutLimiter);
+
+// ─── Input sanitization helper ─────────────────────────────────────────────────
+// Strip HTML/JS tags and trim whitespace from a string value.
+function sanitizeString(value, maxLength = 500) {
+  if (typeof value !== 'string') return '';
+  // Remove HTML tags without encoding remaining characters (avoids double-encoding in React).
+  return value.trim().replace(/<[^>]*>/g, '').slice(0, maxLength);
+}
+
+// Validates that a value is a positive number within an allowed range.
+function sanitizeAmount(value, min = 1, max = 10000) {
+  const num = parseFloat(value);
+  if (!isFinite(num) || num < min || num > max) return null;
+  return Math.round(num * 100) / 100; // Round to 2 decimal places
+}
 
 const {
   LEMONSQUEEZY_API_KEY,
@@ -79,24 +141,40 @@ app.post('/api/checkout', async (req, res) => {
     return res.status(403).json({ error: 'Solo el tutor asignado puede crear una oferta' });
   }
 
-  if (!conversationId || !studentId || !tutorId || !amount || parseFloat(amount) <= 0) {
-    return res.status(400).json({ error: 'Datos incompletos o precio inválido' });
+  // Validate and sanitize all inputs
+  const cleanConversationId = sanitizeString(conversationId, 128);
+  const cleanStudentId     = sanitizeString(studentId, 128);
+  const cleanTutorId       = sanitizeString(tutorId, 128);
+  const cleanTutorName     = sanitizeString(tutorName, 100);
+  const cleanDescription   = sanitizeString(description, 500);
+  const cleanSubject       = sanitizeString(subject, 100);
+  const cleanAmount        = sanitizeAmount(amount, 1, 10000);
+
+  if (!cleanConversationId || !cleanStudentId || !cleanTutorId || cleanAmount === null) {
+    return res.status(400).json({ error: 'Datos incompletos o precio inválido (mín $1, máx $10.000)' });
   }
 
-  // Prevent duplicate pending offers
-  const existingOffer = await db.collection('offers')
-    .where('conversationId', '==', conversationId)
+  // Firestore IDs must be 20 chars (auto-generated) — basic format check
+  if (cleanConversationId.length < 10 || cleanStudentId.length < 10 || cleanTutorId.length < 10) {
+    return res.status(400).json({ error: 'IDs con formato inválido' });
+  }
+
+  // If there are existing pending offers, cancel them before creating the new one
+  const existingOffers = await db.collection('offers')
+    .where('conversationId', '==', cleanConversationId)
     .where('status', '==', 'pending')
-    .limit(1)
     .get();
 
-  if (!existingOffer.empty) {
-    return res.status(409).json({ error: 'Ya existe una oferta pendiente para esta consulta' });
+  if (!existingOffers.empty) {
+    const cancelBatch = db.batch();
+    const cancelledAt = new Date().toISOString();
+    existingOffers.docs.forEach(d => cancelBatch.update(d.ref, { status: 'cancelled', cancelledAt }));
+    await cancelBatch.commit();
+    console.log(`[Checkout] Cancelled ${existingOffers.size} pending offer(s) for conversation ${cleanConversationId}`);
   }
 
   try {
-    const amountFloat = parseFloat(amount);
-    const amountInCents = Math.round(amountFloat * 100);
+    const amountInCents = Math.round(cleanAmount * 100);
     const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
     // Build the Lemon Squeezy checkout payload
@@ -106,16 +184,16 @@ app.post('/api/checkout', async (req, res) => {
         attributes: {
           custom_price: amountInCents,
           product_options: {
-            name: `AcadeMatt: ${subject || 'Asesoría Académica'}`,
-            description: description || 'Servicio de tutoría académica personalizada',
+            name: `AcadeMatt: ${cleanSubject || 'Asesoría Académica'}`,
+            description: cleanDescription || 'Servicio de tutoría académica personalizada',
             redirect_url: redirectUrl,
           },
           checkout_data: {
             custom: {
-              conversation_id: conversationId,
-              student_id: studentId,
-              teacher_id: tutorId,
-              query_id: conversationId,
+              conversation_id: cleanConversationId,
+              student_id: cleanStudentId,
+              teacher_id: cleanTutorId,
+              query_id: cleanConversationId,
             },
           },
         },
@@ -145,20 +223,20 @@ app.post('/api/checkout', async (req, res) => {
     const checkoutUrl = lsResponse.data.data.attributes.url;
     const checkoutId = lsResponse.data.data.id;
 
-    const platformFee = parseFloat((amountFloat * COMMISSION_RATE).toFixed(2));
-    const tutorEarnings = parseFloat((amountFloat - platformFee).toFixed(2));
+    const platformFee = parseFloat((cleanAmount * COMMISSION_RATE).toFixed(2));
+    const tutorEarnings = parseFloat((cleanAmount - platformFee).toFixed(2));
 
     // Persist offer in Firestore
     const offerRef = await db.collection('offers').add({
-      conversationId,
-      studentId,
-      tutorId,
-      tutorName: tutorName || 'Tutor',
-      amount: amountFloat,
+      conversationId: cleanConversationId,
+      studentId: cleanStudentId,
+      tutorId: cleanTutorId,
+      tutorName: cleanTutorName || 'Tutor',
+      amount: cleanAmount,
       platformFee,
       tutorEarnings,
-      description: description || '',
-      subject: subject || '',
+      description: cleanDescription,
+      subject: cleanSubject,
       status: 'pending',
       checkoutUrl,
       checkoutId,
@@ -167,13 +245,13 @@ app.post('/api/checkout', async (req, res) => {
     });
 
     // Mark the conversation as having a pending offer
-    await db.collection('conversations').doc(conversationId).update({
+    await db.collection('conversations').doc(cleanConversationId).update({
       hasOffer: true,
       offerStatus: 'pending',
       offerId: offerRef.id,
     });
 
-    console.log(`[Checkout] Offer ${offerRef.id} created for conversation ${conversationId}`);
+    console.log(`[Checkout] Offer ${offerRef.id} created for conversation ${cleanConversationId}`);
     res.json({ success: true, offerId: offerRef.id, checkoutUrl });
 
   } catch (error) {
@@ -304,8 +382,13 @@ app.post('/api/assign-tutor', async (req, res) => {
     return res.status(400).json({ error: 'conversationId es requerido' });
   }
 
+  const cleanConversationId = sanitizeString(conversationId, 128);
+  if (cleanConversationId.length < 10) {
+    return res.status(400).json({ error: 'conversationId con formato inválido' });
+  }
+
   // Verify the conversation belongs to the requesting student
-  const convDoc = await db.collection('conversations').doc(conversationId).get();
+  const convDoc = await db.collection('conversations').doc(cleanConversationId).get();
   if (!convDoc.exists) {
     return res.status(404).json({ error: 'Conversación no encontrada' });
   }
@@ -322,7 +405,7 @@ app.post('/api/assign-tutor', async (req, res) => {
 
     if (tutorsSnapshot.empty) {
       // No tutors available — add system message and return gracefully
-      await db.collection('conversations').doc(conversationId)
+      await db.collection('conversations').doc(cleanConversationId)
         .collection('messages').add({
           senderId: 'system',
           senderName: 'Sistema',
@@ -356,7 +439,7 @@ app.post('/api/assign-tutor', async (req, res) => {
     const assignedAt = new Date().toISOString();
 
     // 4. Update the conversation
-    await db.collection('conversations').doc(conversationId).update({
+    await db.collection('conversations').doc(cleanConversationId).update({
       tutorId: selected.tutorId,
       tutorName: selected.tutorName,
       status: 'assigned',
@@ -364,7 +447,7 @@ app.post('/api/assign-tutor', async (req, res) => {
     });
 
     // 5. System message
-    await db.collection('conversations').doc(conversationId)
+    await db.collection('conversations').doc(cleanConversationId)
       .collection('messages').add({
         senderId: 'system',
         senderName: 'Sistema',
@@ -374,7 +457,7 @@ app.post('/api/assign-tutor', async (req, res) => {
         read: false,
       });
 
-    console.log(`[AssignTutor] Tutor ${selected.tutorId} assigned to conversation ${conversationId} (load: ${selected.load})`);
+    console.log(`[AssignTutor] Tutor ${selected.tutorId} assigned to conversation ${cleanConversationId} (load: ${selected.load})`);
     res.json({ success: true, tutorAssigned: true, tutorId: selected.tutorId, tutorName: selected.tutorName });
 
   } catch (error) {

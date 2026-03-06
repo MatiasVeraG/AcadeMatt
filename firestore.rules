@@ -136,5 +136,17 @@ service cloud.firestore {
       allow create: if false;
       allow delete: if isAdmin();
     }
+
+    // REVIEWS COLLECTION
+    match /reviews/{reviewId} {
+      // Public read so the ReviewsPanel can show reviews to landing-page visitors
+      allow read: if true;
+      // Authenticated students can submit a review tied to their own uid
+      allow create: if isAuthenticated()
+                    && isStudent()
+                    && request.resource.data.studentId == request.auth.uid;
+      // Reviews are immutable once submitted
+      allow update, delete: if false;
+    }
   }
 }

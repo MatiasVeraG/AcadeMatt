@@ -2,14 +2,15 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Configuración de Firebase para AcadeMatt
+// Configuración de Firebase — valores cargados desde variables de entorno
+// (definidas en .env.local para desarrollo, en el dashboard del host para producción)
 const firebaseConfig = {
-  apiKey: "AIzaSyC7ZoCg3ZQhG3XkpnEOLaZnKFRR5x5e1lU",
-  authDomain: "academatt.firebaseapp.com",
-  projectId: "academatt",
-  storageBucket: "academatt.firebasestorage.app",
-  messagingSenderId: "153275954492",
-  appId: "1:153275954492:web:b875f1c521fb2e8f10da39"
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Inicializar Firebase

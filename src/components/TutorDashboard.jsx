@@ -1,28 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Clock, User, Loader2 } from 'lucide-react';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import AvailabilityToggle from './AvailabilityToggle';
 
-const TutorDashboard = ({ onSelectConversation }) => {
-  const { getUserConversations, userRole } = useAuth();
+const TutorDashboard = ({ onSelectConversation, mode = 'active' }) => {
+  const { currentUser, userRole } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
-
-  const loadConversations = async () => {
+    if (!currentUser || (userRole !== 'tutor' && userRole !== 'admin')) return;
     setIsLoading(true);
-    try {
-      const convos = await getUserConversations();
-      setConversations(convos);
-    } catch (error) {
-      console.error('Error cargando conversaciones:', error);
-    } finally {
-      setIsLoading(false);
+    // NOTE: no orderBy + where compound — sorts client-side to avoid composite index requirement.
+    let q;
+    if (userRole === 'admin') {
+      q = query(collection(db, 'conversations'));
+    } else if (mode === 'history') {
+      q = query(
+        collection(db, 'conversations'),
+        where('tutorId', '==', currentUser.uid),
+        where('status', '==', 'completed')
+      );
+    } else {
+      q = query(
+        collection(db, 'conversations'),
+        where('tutorId', '==', currentUser.uid),
+        where('status', '==', 'assigned')
+      );
     }
-  };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const sorted = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => {
+          const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+          const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+          return tb - ta;
+        });
+      setConversations(sorted);
+      setIsLoading(false);
+    }, (error) => {
+      console.error('Error cargando conversaciones:', error);
+      setIsLoading(false);
+    });
+    return () => unsubscribe();
+  }, [currentUser, userRole, mode]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '';
@@ -58,8 +81,12 @@ const TutorDashboard = ({ onSelectConversation }) => {
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <h2 className="text-xl font-bold text-gray-800">Mis Consultas</h2>
-        <p className="text-sm text-gray-500">Conversaciones asignadas</p>
+        <h2 className="text-xl font-bold text-gray-800">
+          {mode === 'history' ? 'Historial de Consultas' : 'Mis Consultas'}
+        </h2>
+        <p className="text-sm text-gray-500">
+          {mode === 'history' ? 'Consultas completadas' : 'Conversaciones asignadas'}
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
@@ -101,9 +128,16 @@ const TutorDashboard = ({ onSelectConversation }) => {
                       <h3 className="font-semibold text-gray-800 truncate">
                         {conversation.studentName || 'Estudiante'}
                       </h3>
-                      <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
-                        {formatDate(conversation.lastMessageAt)}
-                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        {conversation.tutorUnread > 0 && (
+                          <span className="bg-academic-blue text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                            {conversation.tutorUnread > 99 ? '99+' : conversation.tutorUnread}
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {formatDate(conversation.lastMessageAt)}
+                        </span>
+                      </div>
                     </div>
                     
                     <p className="text-sm text-academic-blue font-medium mb-1">
@@ -133,15 +167,6 @@ const TutorDashboard = ({ onSelectConversation }) => {
           )}
         </div>
 
-        {/* Refresh Button */}
-        {conversations.length > 0 && (
-          <button
-            onClick={loadConversations}
-            className="w-full mt-6 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-academic-blue hover:text-academic-blue transition-colors"
-          >
-            Actualizar Lista
-          </button>
-        )}
       </div>
     </div>
   );

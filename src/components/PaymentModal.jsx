@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
-import { X, CreditCard, Lock, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { X, AlertCircle } from 'lucide-react';
 
-const PaymentModal = ({ isOpen, onClose, amount }) => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('stripe');
-
-  const handlePayment = () => {
-    setIsProcessing(true);
-    
-    // Simular procesamiento de pago
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsSuccess(true);
-      
-      // Auto-cerrar después del éxito
-      setTimeout(() => {
-        onClose();
-        setIsSuccess(false);
-      }, 3000);
-    }, 2000);
-  };
-
+const PaymentModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+        <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <AlertCircle className="w-6 h-6 text-yellow-500" />
+            Enlace de pago no disponible
+          </h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4 text-center">
+          <p className="text-gray-600">
+            No se pudo generar el enlace de pago. Por favor, comunica al tutor o intenta crear la oferta nuevamente.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-6 py-3 bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentModal;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">

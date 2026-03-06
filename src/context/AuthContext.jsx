@@ -6,9 +6,10 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, onSnapshot, deleteDoc, increment } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 
 const AuthContext = createContext();
@@ -89,6 +90,11 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       throw error;
     }
+  };
+
+  // Enviar email de recuperación de contraseña
+  const resetPassword = async (email) => {
+    await sendPasswordResetEmail(auth, email);
   };
 
   // Cerrar sesión
@@ -208,8 +214,18 @@ export const AuthProvider = ({ children }) => {
         read: false
       });
 
-      // Asignar tutor por capacidad
-      await assignTutorByCapacity(conversationRef.id);
+      // Asignar tutor por capacidad.
+      // Si falla, eliminar la conversación para evitar documentos huérfanos.
+      try {
+        await assignTutorByCapacity(conversationRef.id);
+      } catch (assignError) {
+        try {
+          await deleteDoc(doc(db, 'conversations', conversationRef.id));
+        } catch (cleanupError) {
+          console.error('Error al limpiar conversación huérfana:', cleanupError);
+        }
+        throw assignError;
+      }
 
       return conversationRef.id;
     } catch (error) {
@@ -255,15 +271,53 @@ export const AuthProvider = ({ children }) => {
 
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), messageData);
 
-      // Actualizar lastMessageAt en la conversación
+      // Increment unread counter for the *other* party
+      const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
       await updateDoc(doc(db, 'conversations', conversationId), {
-        lastMessageAt: new Date().toISOString()
+        lastMessageAt: new Date().toISOString(),
+        lastMessageText: text.substring(0, 120),
+        [recipientUnreadField]: increment(1)
       });
 
       return true;
     } catch (error) {
       throw error;
     }
+  };
+
+  // Cerrar una consulta con un estado de resultado
+  const closeConversation = async (conversationId, closingStatus = 'successful') => {
+    await updateDoc(doc(db, 'conversations', conversationId), {
+      status: 'completed',
+      completedAt: new Date().toISOString(),
+      closingStatus,
+    });
+  };
+
+  // Archivar una consulta para el usuario actual
+  const archiveConversation = async (conversationId) => {
+    const field = userRole === 'student' ? 'archivedForStudent' : 'archivedForTutor';
+    await updateDoc(doc(db, 'conversations', conversationId), { [field]: true });
+  };
+
+  // Dejar una reseña para una consulta finalizada (una por consulta)
+  const submitReview = async (conversationId, { rating, text, tutorId, tutorName, subject, closingStatus }) => {
+    if (!currentUser) throw new Error('Debes iniciar sesión');
+    // Prevent duplicate reviews
+    await addDoc(collection(db, 'reviews'), {
+      conversationId,
+      studentId: currentUser.uid,
+      studentName: currentUser.displayName || 'Estudiante',
+      tutorId: tutorId || null,
+      tutorName: tutorName || 'Tutor',
+      subject: subject || '',
+      rating,
+      text: text.trim().substring(0, 600),
+      closingStatus: closingStatus || 'successful',
+      createdAt: new Date().toISOString(),
+    });
+    // Mark conversation so modal doesn't show again
+    await updateDoc(doc(db, 'conversations', conversationId), { reviewSubmitted: true });
   };
 
   // Obtener conversaciones del usuario actual
@@ -392,11 +446,15 @@ export const AuthProvider = ({ children }) => {
     login,
     loginWithGoogle,
     logout,
+    resetPassword,
     updateUserRole,
     getAllUsers,
     setAvailability,
     createConversation,
     sendMessage,
+    closeConversation,
+    archiveConversation,
+    submitReview,
     getUserConversations,
     createOffer,
     loading

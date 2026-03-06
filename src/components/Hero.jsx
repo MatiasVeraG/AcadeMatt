@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ReviewsPanel from './ReviewsPanel';
 
 const Hero = ({ onStartConsultation }) => {
+  const [showReviews, setShowReviews] = useState(false);
+
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4 relative">
       <div className="max-w-3xl text-center">
@@ -10,13 +13,23 @@ const Hero = ({ onStartConsultation }) => {
         <p className="text-lg md:text-xl mb-12 text-gray-600 max-w-2xl mx-auto font-light leading-relaxed">
           Conecta con expertos académicos en tiempo real. Obtén ayuda personalizada para tus proyectos, tareas y dudas académicas.
         </p>
-        <button 
-          onClick={onStartConsultation}
-          className="bg-academic-blue text-white px-12 py-4 rounded-full text-base font-medium hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl"
-        >
-          Iniciar Consulta
-        </button>
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <button
+            onClick={onStartConsultation}
+            className="bg-academic-blue text-white px-12 py-4 rounded-full text-base font-medium hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl"
+          >
+            Iniciar Consulta
+          </button>
+          <button
+            onClick={() => setShowReviews(true)}
+            className="px-8 py-4 rounded-full text-base font-medium border border-gray-300 text-gray-600 hover:border-academic-blue hover:text-academic-blue transition-all"
+          >
+            ⭐ Reseñas
+          </button>
+        </div>
       </div>
+
+      {showReviews && <ReviewsPanel onClose={() => setShowReviews(false)} />}
     </div>
   );
 };

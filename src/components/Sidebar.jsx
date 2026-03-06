@@ -1,14 +1,15 @@
 import React from 'react';
-import { MessageSquare, CreditCard, User, X, Menu, LogOut, Shield } from 'lucide-react';
+import { MessageSquare, CreditCard, History, X, Menu, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationsPanel from './NotificationsPanel';
 
-const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel }) => {
+const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel, currentView, onChangeView }) => {
   const { currentUser, logout, userRole } = useAuth();
 
   const menuItems = [
-    { icon: MessageSquare, label: 'Mis Consultas', active: true },
-    { icon: CreditCard, label: 'Pagos', active: false },
-    { icon: User, label: 'Perfil', active: false },
+    { icon: MessageSquare, label: 'Mis Consultas', view: 'conversations' },
+    { icon: CreditCard, label: 'Pagos', view: 'payments' },
+    { icon: History, label: 'Historial', view: 'history' },
   ];
 
   const handleLogout = async () => {
@@ -71,13 +72,14 @@ const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel }) => {
           </div>
           
           <nav className="space-y-2">
-            {menuItems.map((item, index) => (
+            {menuItems.map((item) => (
               <button
-                key={index}
+                key={item.view}
+                onClick={() => { onChangeView(item.view); setIsOpen(false); }}
                 className={`
                   w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all
-                  ${item.active 
-                    ? 'bg-academic-blue text-white shadow-lg' 
+                  ${currentView === item.view
+                    ? 'bg-academic-blue text-white shadow-lg'
                     : 'text-gray-600 hover:bg-gray-100'}
                 `}
               >
@@ -85,6 +87,13 @@ const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel }) => {
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}
+
+            {/* Notifications — solo visible para tutores */}
+            {(userRole === 'tutor' || userRole === 'admin') && (
+              <div className="border-t border-gray-200 mt-2 pt-2">
+                <NotificationsPanel userId={currentUser?.uid} />
+              </div>
+            )}
 
             {/* Admin Panel Button - Solo visible para admins */}
             {userRole === 'admin' && (
