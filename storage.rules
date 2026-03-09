@@ -6,16 +6,25 @@ service firebase.storage {
     // Ruta: tareas/{userId}/{conversationId}/{fileName}
     match /tareas/{userId}/{conversationId}/{fileName} {
 
-      // Leer: el propio usuario que subió el archivo,
-      // el tutor asignado a esa conversación, o un admin.
+      // Leer: Admin siempre puede.
+      // Alumno/tutor solo pueden si los archivos NO están archivados
+      // (el archivador pone filesArchived:true en la conversación).
       allow read: if request.auth != null && (
-        request.auth.uid == userId ||
-        firestore.get(
-          /databases/(default)/documents/conversations/$(conversationId)
-        ).data.tutorId == request.auth.uid ||
         firestore.get(
           /databases/(default)/documents/users/$(request.auth.uid)
         ).data.role == 'admin'
+        ||
+        (
+          !firestore.get(
+            /databases/(default)/documents/conversations/$(conversationId)
+          ).data.get('filesArchived', false)
+          && (
+            request.auth.uid == userId ||
+            firestore.get(
+              /databases/(default)/documents/conversations/$(conversationId)
+            ).data.tutorId == request.auth.uid
+          )
+        )
       );
 
       // Escribir (subir): solo el propio usuario, con estas restricciones:

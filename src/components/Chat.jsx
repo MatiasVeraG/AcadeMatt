@@ -509,7 +509,7 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
         />
       )}
 
-      {/* Offer Creation Form — slides in above the input area for tutors */}}
+      {/* Offer Creation Form — slides in above the input area for tutors */}
       {userRole === 'tutor' && showOfferForm && (
         <div className="bg-white border-t border-gray-200 px-4 md:px-6 py-4">
           <form onSubmit={handleCreateOffer} className="max-w-4xl mx-auto space-y-3">
