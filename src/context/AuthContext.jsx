@@ -215,12 +215,16 @@ export const AuthProvider = ({ children }) => {
       });
 
       // Asignar tutor por capacidad.
-      // Si falla, eliminar la conversación para evitar documentos huérfanos.
+      // Si falla, marcar la conversación como fallida (el estudiante no tiene
+      // permisos de delete en Firestore, así que usamos update en su lugar).
       try {
         await assignTutorByCapacity(conversationRef.id);
       } catch (assignError) {
         try {
-          await deleteDoc(doc(db, 'conversations', conversationRef.id));
+          await updateDoc(doc(db, 'conversations', conversationRef.id), {
+            status: 'failed',
+            failedAt: new Date().toISOString(),
+          });
         } catch (cleanupError) {
           console.error('Error al limpiar conversación huérfana:', cleanupError);
         }
