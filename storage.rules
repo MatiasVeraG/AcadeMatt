@@ -1,0 +1,42 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Archivos de tareas ──────────────────────────────────────────────────
+    // Ruta: tareas/{userId}/{conversationId}/{fileName}
+    match /tareas/{userId}/{conversationId}/{fileName} {
+
+      // Leer: el propio usuario que subió el archivo,
+      // el tutor asignado a esa conversación, o un admin.
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        firestore.get(
+          /databases/(default)/documents/conversations/$(conversationId)
+        ).data.tutorId == request.auth.uid ||
+        firestore.get(
+          /databases/(default)/documents/users/$(request.auth.uid)
+        ).data.role == 'admin'
+      );
+
+      // Escribir (subir): solo el propio usuario, con estas restricciones:
+      //   • Máximo 20 MB
+      //   • Solo PDF, DOCX e imágenes
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.size <= 20 * 1024 * 1024
+        && (
+             request.resource.contentType == 'application/pdf' ||
+             request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+             request.resource.contentType.matches('image/.+')
+           );
+
+      // Eliminar: solo el propio usuario que subió el archivo.
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Denegar todo lo demás por defecto.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

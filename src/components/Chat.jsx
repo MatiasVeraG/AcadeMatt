@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle, Paperclip } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, where, doc, updateDoc } from 'firebase/firestore';import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import ProposalCard from './ProposalCard';
 import ReviewModal from './ReviewModal';
+import TaskUpload from './TaskUpload';
 
 const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
   const { sendMessage, currentUser, userRole, createOffer, closeConversation } = useAuth();
@@ -20,6 +21,7 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showTaskUpload, setShowTaskUpload] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -449,7 +451,16 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
         </div>
       )}
 
-      {/* Offer Creation Form — slides in above the input area for tutors */}
+      {/* Task Upload Panel */}
+      {showTaskUpload && conversation?.status !== 'completed' && (
+        <TaskUpload
+          conversationId={conversationId}
+          onUploaded={() => setTimeout(() => setShowTaskUpload(false), 1800)}
+          onCancel={() => setShowTaskUpload(false)}
+        />
+      )}
+
+      {/* Offer Creation Form — slides in above the input area for tutors */}}
       {userRole === 'tutor' && showOfferForm && (
         <div className="bg-white border-t border-gray-200 px-4 md:px-6 py-4">
           <form onSubmit={handleCreateOffer} className="max-w-4xl mx-auto space-y-3">
@@ -538,6 +549,17 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
       {/* Input Area */}
       <div className="bg-white border-t border-gray-200 px-4 md:px-6 py-4">
         <div className="flex gap-3 items-end max-w-4xl mx-auto">
+          {/* Attach file button (all roles, open conversations) */}
+          {conversation?.status !== 'completed' && !showTaskUpload && (
+            <button
+              onClick={() => { setShowTaskUpload(true); setShowOfferForm(false); }}
+              className="flex-shrink-0 flex items-center justify-center w-11 h-11 bg-gray-100 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+              title="Adjuntar archivo"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+          )}
+
           {/* "Crear Oferta" shortcut button for tutors */}
           {userRole === 'tutor' && !showOfferForm && conversation?.status !== 'completed' && (
             <button
