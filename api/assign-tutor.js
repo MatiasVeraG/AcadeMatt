@@ -38,6 +38,35 @@ export default async function handler(req, res) {
       .get();
 
     if (tutorsSnapshot.empty) {
+      // Try fallback: use the admin-configured default tutor
+      const configSnap = await db.collection('config').doc('settings').get();
+      const defaultTutorId = configSnap.exists ? configSnap.data().defaultTutorId : null;
+
+      if (defaultTutorId) {
+        const defaultTutorDoc = await db.collection('users').doc(defaultTutorId).get();
+        if (defaultTutorDoc.exists) {
+          const defaultTutorName = defaultTutorDoc.data().displayName || 'Tutor';
+          const assignedAt = new Date().toISOString();
+          await db.collection('conversations').doc(cleanConversationId).update({
+            tutorId: defaultTutorId,
+            tutorName: defaultTutorName,
+            status: 'assigned',
+            assignedAt,
+          });
+          await db.collection('conversations').doc(cleanConversationId)
+            .collection('messages').add({
+              senderId: 'system',
+              senderName: 'Sistema',
+              senderRole: 'system',
+              text: `No hay tutores disponibles en este momento. ${defaultTutorName} ha sido asignado como tu tutor de respaldo y te responderá pronto.`,
+              timestamp: assignedAt,
+              read: false,
+            });
+          return res.json({ success: true, tutorAssigned: true, tutorId: defaultTutorId, tutorName: defaultTutorName, fallback: true });
+        }
+      }
+
+      // No available tutors and no fallback configured
       await db.collection('conversations').doc(cleanConversationId)
         .collection('messages').add({
           senderId: 'system',

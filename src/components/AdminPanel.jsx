@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Users, RefreshCw, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Shield, Users, RefreshCw, AlertCircle, CheckCircle, X, Star } from 'lucide-react';
 
 const AdminPanel = ({ onClose }) => {
-  const { getAllUsers, updateUserRole, currentUser, userRole } = useAuth();
+  const { getAllUsers, updateUserRole, setDefaultTutor, getDefaultTutor, currentUser, userRole } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [defaultTutorId, setDefaultTutorId] = useState(null);
+  const [selectedDefault, setSelectedDefault] = useState('');
+  const [savingDefault, setSavingDefault] = useState(false);
 
   useEffect(() => {
     loadUsers();
+    getDefaultTutor().then(id => {
+      setDefaultTutorId(id);
+      setSelectedDefault(id || '');
+    }).catch(() => {});
   }, []);
 
   const loadUsers = async () => {
@@ -58,6 +65,21 @@ const AdminPanel = ({ onClose }) => {
       setError('Error al actualizar rol: ' + err.message);
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const handleSaveDefaultTutor = async () => {
+    try {
+      setSavingDefault(true);
+      setError('');
+      await setDefaultTutor(selectedDefault || null);
+      setDefaultTutorId(selectedDefault || null);
+      setSuccess('Tutor de respaldo actualizado');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Error al guardar tutor de respaldo: ' + err.message);
+    } finally {
+      setSavingDefault(false);
     }
   };
 
@@ -133,6 +155,39 @@ const AdminPanel = ({ onClose }) => {
               <p className="text-sm text-green-700">{success}</p>
             </div>
           )}
+
+          {/* Default Tutor Selector */}
+          <div className="mb-6 border border-yellow-200 bg-yellow-50 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Star className="w-5 h-5 text-yellow-500" />
+              <h3 className="font-semibold text-gray-800">Tutor de Respaldo</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              Si no hay tutores disponibles, las consultas se asignan automáticamente a este tutor.
+            </p>
+            <div className="flex gap-2">
+              <select
+                value={selectedDefault}
+                onChange={(e) => setSelectedDefault(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              >
+                <option value="">— Sin tutor de respaldo —</option>
+                {users.filter(u => u.role === 'tutor' || u.role === 'admin').map(u => (
+                  <option key={u.id} value={u.id}>
+                    {u.displayName || u.email}{u.id === defaultTutorId ? ' ⭐ (actual)' : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleSaveDefaultTutor}
+                disabled={savingDefault || selectedDefault === (defaultTutorId || '')}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {savingDefault ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
+                Guardar
+              </button>
+            </div>
+          </div>
 
           {/* Refresh Button */}
           <div className="mb-4 flex justify-between items-center">

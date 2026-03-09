@@ -138,6 +138,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Configurar tutor de respaldo (solo admins)
+  const setDefaultTutor = async (tutorId) => {
+    if (userRole !== 'admin') throw new Error('No tienes permisos para realizar esta acción');
+    await setDoc(doc(db, 'config', 'settings'), { defaultTutorId: tutorId }, { merge: true });
+  };
+
+  // Leer tutor de respaldo
+  const getDefaultTutor = async () => {
+    const snap = await getDoc(doc(db, 'config', 'settings'));
+    return snap.exists() ? (snap.data().defaultTutorId || null) : null;
+  };
+
   // Obtener todos los usuarios (solo para admins)
   const getAllUsers = async () => {
     try {
@@ -452,6 +464,8 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     logout,
     resetPassword,
+    setDefaultTutor,
+    getDefaultTutor,
     updateUserRole,
     getAllUsers,
     setAvailability,
