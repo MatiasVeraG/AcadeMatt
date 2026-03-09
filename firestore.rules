@@ -148,5 +148,26 @@ service cloud.firestore {
       // Reviews are immutable once submitted
       allow update, delete: if false;
     }
+
+    // TAREAS COLLECTION — file upload metadata
+    match /tareas/{tareaId} {
+      // Read: the uploader, the tutor of that conversation, or admin
+      allow read: if isAuthenticated() && (
+        resource.data.uploadedBy == request.auth.uid ||
+        get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.tutorId == request.auth.uid ||
+        isAdmin()
+      );
+      // Create: any authenticated user, only for their own uid
+      allow create: if isAuthenticated()
+                    && request.resource.data.uploadedBy == request.auth.uid;
+      // No client-side updates or deletes
+      allow update, delete: if isAdmin();
+    }
+
+    // CONFIG COLLECTION — app-wide settings (e.g. defaultTutorId)
+    match /config/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
   }
 }
