@@ -22,7 +22,25 @@ const admin = require('firebase-admin');
 const { Storage } = require('@google-cloud/storage');
 
 // ── Init ────────────────────────────────────────────────────────────────────
-const serviceAccount = require('./academatt-firebase-adminsdk-fbsvc-85e197442c.json');
+// Supports two modes:
+//   Production (Railway): set FIREBASE_SERVICE_ACCOUNT_JSON env var with the
+//                         full JSON content of the service account key.
+//   Local dev:            falls back to reading the JSON file directly.
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+    // Railway sometimes double-escapes \n in private keys
+    if (serviceAccount.private_key) {
+      serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+    }
+  } catch (e) {
+    console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_JSON:', e.message);
+    process.exit(1);
+  }
+} else {
+  serviceAccount = require('./academatt-firebase-adminsdk-fbsvc-85e197442c.json');
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
