@@ -318,6 +318,11 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  // Mover una consulta a "En Proceso" (solo tutor/admin)
+  const moveToInProgress = async (conversationId) => {
+    await updateDoc(doc(db, 'conversations', conversationId), { inProgressForTutor: true });
+  };
+
   // Archivar una consulta para el usuario actual
   const archiveConversation = async (conversationId) => {
     const field = userRole === 'student' ? 'archivedForStudent' : 'archivedForTutor';
@@ -481,6 +486,7 @@ export const AuthProvider = ({ children }) => {
     sendMessage,
     closeConversation,
     archiveConversation,
+    moveToInProgress,
     submitReview,
     getUserConversations,
     createOffer,

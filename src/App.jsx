@@ -8,7 +8,6 @@ import AdminPanel from './components/AdminPanel';
 import TutorDashboard from './components/TutorDashboard';
 import StudentDashboard from './components/StudentDashboard';
 import PaymentsPanel from './components/PaymentsPanel';
-import KanbanDashboard from './components/KanbanDashboard';
 
 function App() {
   const { currentUser, userRole } = useAuth();
@@ -101,18 +100,12 @@ function App() {
             ) : userRole === 'student' ? (
               <StudentDashboard
                 onSelectConversation={handleSelectConversation}
+                currentView={currentView}
               />
             ) : (userRole === 'tutor' || userRole === 'admin') ? (
-              currentView === 'history' ? (
-                <TutorDashboard
-                  onSelectConversation={handleSelectConversation}
-                  mode="history"
-                />
-              ) : (
-                <KanbanDashboard
-                  onSelectConversation={handleSelectConversation}
-                />
-              )
+              <TutorDashboard
+                onSelectConversation={handleSelectConversation}
+              />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-gray-500">Cargando...</p>

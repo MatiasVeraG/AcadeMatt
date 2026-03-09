@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle, Paperclip, Download, FileText, Image } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle, Paperclip, Download, FileText, Image, Clock } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, where, doc, updateDoc } from 'firebase/firestore';import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import ProposalCard from './ProposalCard';
@@ -290,6 +290,23 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
           )}
         </div>
       </div>
+
+      {/* 7-day archive notice — shown for students when conversation is completed */}
+      {userRole === 'student' && conversation?.status === 'completed' && (() => {
+        const completedAt = conversation.completedAt ? new Date(conversation.completedAt) : null;
+        const daysLeft = completedAt
+          ? Math.max(0, 7 - Math.floor((Date.now() - completedAt.getTime()) / 86400000))
+          : 7;
+        return (
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center gap-2 text-sm text-amber-800">
+            <Clock className="w-4 h-4 flex-shrink-0 text-amber-500" />
+            <span>
+              Esta consulta está cerrada. Los archivos serán eliminados en{' '}
+              <strong>{daysLeft} día{daysLeft !== 1 ? 's' : ''}</strong>.
+            </span>
+          </div>
+        );
+      })()}
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4">

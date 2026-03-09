@@ -4,17 +4,10 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 
-const TABS = [
-  { id: 'active',    label: 'Activas' },
-  { id: 'completed', label: 'Completadas' },
-  { id: 'archived',  label: 'Archivadas' },
-];
-
-const StudentDashboard = ({ onSelectConversation }) => {
+const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' }) => {
   const { currentUser, createConversation, archiveConversation } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('active');
   const [showNewConsultationModal, setShowNewConsultationModal] = useState(false);
   const [subject, setSubject] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -46,16 +39,9 @@ const StudentDashboard = ({ onSelectConversation }) => {
     return () => unsubscribe();
   }, [currentUser]);
 
-  const counts = {
-    active:    conversations.filter(c => c.status !== 'completed' && !c.archivedForStudent).length,
-    completed: conversations.filter(c => c.status === 'completed'  && !c.archivedForStudent).length,
-    archived:  conversations.filter(c => c.archivedForStudent === true).length,
-  };
-
   const visibleConversations = conversations.filter(c => {
-    if (activeTab === 'archived')  return c.archivedForStudent === true;
-    if (activeTab === 'completed') return c.status === 'completed' && !c.archivedForStudent;
-    return c.status !== 'completed' && !c.archivedForStudent;
+    if (currentView === 'history') return c.archivedForStudent === true;
+    return !c.archivedForStudent;
   });
 
   const handleCreateConsultation = async (e) => {
@@ -110,46 +96,25 @@ const StudentDashboard = ({ onSelectConversation }) => {
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Mis Consultas</h2>
+            <h2 className="text-xl font-bold text-gray-800">
+              {currentView === 'history' ? 'Historial' : 'Mis Consultas'}
+            </h2>
             <p className="text-sm text-gray-500">
-              {conversations.length} consulta{conversations.length !== 1 ? 's' : ''} en total
+              {visibleConversations.length} consulta{visibleConversations.length !== 1 ? 's' : ''}
+              {currentView === 'history' ? ' archivadas' : ' activas'}
             </p>
           </div>
-          <button
-            onClick={() => setShowNewConsultationModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-lg hover:shadow-lg transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="font-medium">Nueva Consulta</span>
-          </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-          {TABS.map(tab => (
+          {currentView === 'conversations' && (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white text-gray-800 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+              onClick={() => setShowNewConsultationModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-lg hover:shadow-lg transition-all"
             >
-              {tab.label}
-              {counts[tab.id] > 0 && (
-                <span className={`text-xs rounded-full px-1.5 py-0.5 font-semibold ${
-                  activeTab === tab.id
-                    ? 'bg-academic-blue/10 text-academic-blue'
-                    : 'bg-gray-200 text-gray-500'
-                }`}>
-                  {counts[tab.id]}
-                </span>
-              )}
+              <Plus className="w-5 h-5" />
+              <span className="font-medium">Nueva Consulta</span>
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -163,11 +128,9 @@ const StudentDashboard = ({ onSelectConversation }) => {
             <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-600 font-medium">
-                {activeTab === 'active'    ? 'No tienes consultas activas'     :
-                 activeTab === 'completed' ? 'No tienes consultas completadas' :
-                                            'No tienes consultas archivadas'}
+                {currentView === 'history' ? 'No tienes consultas archivadas' : 'No tienes consultas activas'}
               </p>
-              {activeTab === 'active' && (
+              {currentView === 'conversations' && (
                 <p className="text-gray-500 text-sm mt-1">
                   Haz clic en "Nueva Consulta" para comenzar
                 </p>
@@ -209,8 +172,8 @@ const StudentDashboard = ({ onSelectConversation }) => {
                   </div>
                 </button>
 
-                {/* Archive button — only for completed non-archived conversations */}
-                {activeTab === 'completed' && (
+                {/* Archive button — only in "Mis Consultas" view */}
+                {currentView === 'conversations' && (
                   <button
                     onClick={(e) => handleArchive(e, convo.id)}
                     disabled={archivingId === convo.id}
