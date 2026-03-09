@@ -314,6 +314,7 @@ export const AuthProvider = ({ children }) => {
       status: 'completed',
       completedAt: new Date().toISOString(),
       closingStatus,
+      filesArchived: false,
     });
   };
 
