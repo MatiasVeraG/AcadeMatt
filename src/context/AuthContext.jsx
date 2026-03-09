@@ -421,7 +421,8 @@ export const AuthProvider = ({ children }) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+      const msg = [errorData.error, errorData.detail].filter(Boolean).join(' — ') || `Error del servidor: ${response.status}`;
+      throw new Error(msg);
     }
 
     return response.json(); // { success, offerId, checkoutUrl }
