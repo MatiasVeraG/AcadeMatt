@@ -1,10 +1,51 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle, Paperclip } from 'lucide-react';
+import { Send, Loader2, ArrowLeft, DollarSign, TrendingUp, X, Tag, CheckCircle, XCircle, MinusCircle, Paperclip, Download, FileText, Image } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, where, doc, updateDoc } from 'firebase/firestore';import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import ProposalCard from './ProposalCard';
 import ReviewModal from './ReviewModal';
 import TaskUpload from './TaskUpload';
+
+const formatBytes = (bytes) => {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const FileMessageBubble = ({ fileName, fileType, fileSize, fileURL, light }) => {
+  const isImage = fileType?.startsWith('image/');
+  const Icon = isImage ? Image : FileText;
+  const textColor = light ? 'text-white' : 'text-gray-800';
+  const subColor = light ? 'text-blue-100' : 'text-gray-500';
+  const iconBg = light ? 'bg-white/20' : 'bg-academic-blue/10';
+  const iconColor = light ? 'text-white' : 'text-academic-blue';
+  const btnClass = light
+    ? 'flex items-center gap-1 text-xs font-semibold text-white bg-white/20 hover:bg-white/30 rounded-lg px-2 py-1 transition-colors'
+    : 'flex items-center gap-1 text-xs font-semibold text-academic-blue bg-academic-blue/10 hover:bg-academic-blue/20 rounded-lg px-2 py-1 transition-colors';
+
+  return (
+    <div className="flex items-center gap-3 min-w-[180px] max-w-[260px]">
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-semibold truncate ${textColor}`}>{fileName}</p>
+        <p className={`text-xs ${subColor}`}>{formatBytes(fileSize)}</p>
+      </div>
+      <a
+        href={fileURL}
+        target="_blank"
+        rel="noopener noreferrer"
+        download={fileName}
+        className={btnClass}
+        title="Descargar"
+      >
+        <Download className="w-3.5 h-3.5" />
+      </a>
+    </div>
+  );
+};
 
 const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
   const { sendMessage, currentUser, userRole, createOffer, closeConversation } = useAuth();
@@ -369,7 +410,11 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
                     <div>
                       <div className="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm border border-gray-200">
                         <p className="text-xs text-gray-500 font-semibold mb-1">{message.senderName}</p>
-                        <p className="text-gray-800">{message.text}</p>
+                        {message.fileURL ? (
+                          <FileMessageBubble fileName={message.fileName} fileType={message.fileType} fileSize={message.fileSize} fileURL={message.fileURL} />
+                        ) : (
+                          <p className="text-gray-800">{message.text}</p>
+                        )}
                       </div>
                       <span className="text-xs text-gray-400 ml-2 mt-1 block">
                         {formatTime(message.timestamp)}
@@ -381,7 +426,11 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
                 {!isSystem && isCurrentUser && (
                   <div>
                     <div className="bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm">
-                      <p>{message.text}</p>
+                      {message.fileURL ? (
+                        <FileMessageBubble fileName={message.fileName} fileType={message.fileType} fileSize={message.fileSize} fileURL={message.fileURL} light />
+                      ) : (
+                        <p>{message.text}</p>
+                      )}
                     </div>
                     <span className="text-xs text-gray-400 mr-2 mt-1 block text-right">
                       {formatTime(message.timestamp)}

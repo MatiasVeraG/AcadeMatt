@@ -23,7 +23,7 @@ const formatBytes = (bytes) => {
 };
 
 const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
-  const { currentUser, userRole } = useAuth();
+  const { currentUser, userRole, sendMessage } = useAuth();
   const fileInputRef = useRef(null);
 
   const [file, setFile] = useState(null);
@@ -127,6 +127,13 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
             downloadURL,
             storagePath,
             uploadedAt: new Date().toISOString(),
+          });
+
+          await sendMessage(conversationId, '', {
+            downloadURL,
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
           });
 
           setUploadState('success');

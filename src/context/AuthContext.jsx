@@ -270,7 +270,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Enviar mensaje en una conversación
-  const sendMessage = async (conversationId, text) => {
+  const sendMessage = async (conversationId, text, fileData = null) => {
     try {
       if (!currentUser) {
         throw new Error('Debes iniciar sesión');
@@ -282,16 +282,23 @@ export const AuthProvider = ({ children }) => {
         senderRole: userRole,
         text: text,
         timestamp: new Date().toISOString(),
-        read: false
+        read: false,
+        ...(fileData && {
+          fileURL: fileData.downloadURL,
+          fileName: fileData.fileName,
+          fileType: fileData.fileType,
+          fileSize: fileData.fileSize,
+        }),
       };
 
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), messageData);
 
       // Increment unread counter for the *other* party
       const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
+      const lastText = text || (fileData ? `📎 ${fileData.fileName}` : '');
       await updateDoc(doc(db, 'conversations', conversationId), {
         lastMessageAt: new Date().toISOString(),
-        lastMessageText: text.substring(0, 120),
+        lastMessageText: lastText.substring(0, 120),
         [recipientUnreadField]: increment(1)
       });
 
