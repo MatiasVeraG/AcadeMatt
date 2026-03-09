@@ -59,6 +59,13 @@ export default async function handler(req, res) {
       FRONTEND_URL,
     } = process.env;
 
+    if (!LEMONSQUEEZY_API_KEY || !LEMONSQUEEZY_STORE_ID || !LEMONSQUEEZY_VARIANT_ID) {
+      const missing = ['LEMONSQUEEZY_API_KEY', 'LEMONSQUEEZY_STORE_ID', 'LEMONSQUEEZY_VARIANT_ID']
+        .filter(k => !process.env[k]);
+      console.error('[Checkout] Missing env vars:', missing);
+      return res.status(500).json({ error: `Variables de entorno faltantes: ${missing.join(', ')}` });
+    }
+
     const amountInCents = Math.round(cleanAmount * 100);
     const redirectUrl = FRONTEND_URL || 'http://localhost:5173';
 
@@ -133,7 +140,10 @@ export default async function handler(req, res) {
 
   } catch (error) {
     const lsError = error.response?.data;
-    console.error('[Checkout] Lemon Squeezy error:', lsError || error.message);
-    res.status(500).json({ error: 'Error al crear el checkout con Lemon Squeezy' });
+    const lsStatus = error.response?.status;
+    console.error('[Checkout] Lemon Squeezy error status:', lsStatus);
+    console.error('[Checkout] Lemon Squeezy error body:', JSON.stringify(lsError || error.message));
+    const detail = lsError?.errors?.[0]?.detail || lsError?.message || error.message;
+    res.status(500).json({ error: 'Error al crear el checkout con Lemon Squeezy', detail, lsStatus });
   }
 }
