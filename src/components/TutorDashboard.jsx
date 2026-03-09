@@ -225,7 +225,6 @@ function AllPaymentsPanel() {
 const TUTOR_TABS = [
   { id: 'consultas',  label: 'Consultas',  dotColor: 'bg-blue-500'   },
   { id: 'inprogress', label: 'En Proceso', dotColor: 'bg-orange-500' },
-  { id: 'historial',  label: 'Historial',  dotColor: 'bg-gray-400'   },
 ];
 
 const ADMIN_TABS = [
@@ -236,7 +235,7 @@ const ADMIN_TABS = [
 ];
 
 // ── Main Component ────────────────────────────────────────────────────────────
-const TutorDashboard = ({ onSelectConversation }) => {
+const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' }) => {
   const { currentUser, userRole, moveToInProgress } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -283,6 +282,9 @@ const TutorDashboard = ({ onSelectConversation }) => {
     );
   }
 
+  // For tutors, the sidebar "Historial" view shows archived convs directly
+  const isTutorHistorial = userRole === 'tutor' && currentView === 'history';
+
   const tabs = userRole === 'admin' ? ADMIN_TABS : TUTOR_TABS;
 
   const grouped = {
@@ -292,6 +294,45 @@ const TutorDashboard = ({ onSelectConversation }) => {
   };
 
   const tabConvs = grouped[activeTab] ?? [];
+
+  // Tutor historial view (activated via sidebar "Historial")
+  if (isTutorHistorial) {
+    const historial = grouped.historial;
+    return (
+      <div className="flex flex-col h-full bg-gray-50">
+        <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex-shrink-0">
+          <h2 className="text-xl font-bold text-gray-800">Historial</h2>
+          <p className="text-sm text-gray-500">{historial.length} consulta{historial.length !== 1 ? 's' : ''} archivadas</p>
+        </div>
+        {isLoading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-academic-blue" />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-2xl mx-auto space-y-3">
+              {historial.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-300">
+                  <MessageSquare className="w-10 h-10 mb-2" />
+                  <p className="text-sm">Sin consultas archivadas</p>
+                </div>
+              ) : (
+                historial.map(conv => (
+                  <ConvCard
+                    key={conv.id}
+                    conv={conv}
+                    onOpen={onSelectConversation}
+                    onMoveToInProgress={null}
+                    onArchiveRequest={null}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50">

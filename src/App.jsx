@@ -105,6 +105,7 @@ function App() {
             ) : (userRole === 'tutor' || userRole === 'admin') ? (
               <TutorDashboard
                 onSelectConversation={handleSelectConversation}
+                currentView={currentView}
               />
             ) : (
               <div className="flex items-center justify-center h-full">
