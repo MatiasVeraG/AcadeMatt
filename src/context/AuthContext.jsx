@@ -236,7 +236,7 @@ export const AuthProvider = ({ children }) => {
   // Asignar tutor por capacidad — delegado al backend (usa Admin SDK)
   const assignTutorByCapacity = async (conversationId) => {
     const token = await currentUser.getIdToken();
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
     const response = await fetch(`${apiUrl}/api/assign-tutor`, {
       method: 'POST',
       headers: {
@@ -391,7 +391,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     const token = await currentUser.getIdToken();
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
 
     // Fetch conversation to get studentId and subject
     const convDoc = await getDoc(doc(db, 'conversations', conversationId));
