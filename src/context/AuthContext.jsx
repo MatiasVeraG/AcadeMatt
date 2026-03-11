@@ -293,14 +293,18 @@ export const AuthProvider = ({ children }) => {
 
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), messageData);
 
-      // Increment unread counter for the *other* party
-      const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
-      const lastText = text || (fileData ? `📎 ${fileData.fileName}` : '');
-      await updateDoc(doc(db, 'conversations', conversationId), {
-        lastMessageAt: new Date().toISOString(),
-        lastMessageText: lastText.substring(0, 120),
-        [recipientUnreadField]: increment(1)
-      });
+      // Update conversation metadata + unread counter — best-effort, not critical
+      try {
+        const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
+        const lastText = text || (fileData ? `📎 ${fileData.fileName}` : '');
+        await updateDoc(doc(db, 'conversations', conversationId), {
+          lastMessageAt: new Date().toISOString(),
+          lastMessageText: lastText.substring(0, 120),
+          [recipientUnreadField]: increment(1)
+        });
+      } catch (metaErr) {
+        console.warn('sendMessage: metadata update failed (message was sent):', metaErr.message);
+      }
 
       return true;
     } catch (error) {

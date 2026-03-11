@@ -18,23 +18,18 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && getUserRole() == 'admin';
     }
-    
-    function isTutor() {
-      return isAuthenticated() && getUserRole() == 'tutor';
-    }
-    
+
     function isStudent() {
       return isAuthenticated() && getUserRole() == 'student';
     }
     
     // USERS COLLECTION
     match /users/{userId} {
-      // Leer: propietario, admins, y tutores (para asignación)
-      allow read: if isOwner(userId) || isAdmin() || isTutor();
+      // Leer: propietario o admin
+      allow read: if isOwner(userId) || isAdmin();
       
-      // Crear: solo durante signup con rol 'student'
-      allow create: if isOwner(userId) 
-                    && request.resource.data.role == 'student'
+      // Crear: solo durante signup
+      allow create: if isOwner(userId)
                     && request.resource.data.email == request.auth.token.email;
       
       // Actualizar: propietario (excepto rol) o admin (todo)
@@ -54,9 +49,8 @@ service cloud.firestore {
         isAdmin()
       );
       
-      // Crear: solo estudiantes, con status 'pending' y sin tutor asignado
-      allow create: if isAuthenticated() 
-                    && isStudent()
+      // Crear: usuario autenticado crea su propia consulta en estado pending
+      allow create: if isAuthenticated()
                     && request.resource.data.studentId == request.auth.uid
                     && request.resource.data.status == 'pending'
                     && request.resource.data.tutorId == null;
@@ -69,8 +63,8 @@ service cloud.firestore {
          request.resource.data.tutorId != null) ||
         // Estudiante dueño puede actualizar (ej: marcar como completada)
         (resource.data.studentId == request.auth.uid) ||
-        // Tutor asignado puede cambiar status
-        (resource.data.tutorId == request.auth.uid && isTutor()) ||
+        // Tutor asignado puede actualizar la conversación
+        (resource.data.tutorId == request.auth.uid) ||
         // Admin puede todo
         isAdmin()
       );
