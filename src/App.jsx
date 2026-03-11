@@ -124,7 +124,7 @@ function App() {
 
   // Si debe mostrar autenticación
   if (showAuth) {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+    return <AuthPage onAuthSuccess={handleAuthSuccess} onBack={() => setShowAuth(false)} />;
   }
 
   // Landing page por defecto

@@ -11,6 +11,10 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'Roboto', 'sans-serif'],
+        'dm-sans': ['DM Sans', 'sans-serif'],
+        'poppins': ['Poppins', 'sans-serif'],
+        'montserrat': ['Montserrat', 'sans-serif'],
+        'source-sans': ['Source Sans 3', 'sans-serif'],
       },
     },
   },
