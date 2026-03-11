@@ -5,9 +5,6 @@
   name = "archive-tasks"
   source = "server"
 
-  [services.deploy]
-    startCommand = "node archive-tasks.js"
-
   [[services.cronJobs]]
     schedule = "0 3 * * *"
     command   = "node archive-tasks.js"
