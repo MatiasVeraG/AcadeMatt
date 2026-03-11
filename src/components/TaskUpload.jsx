@@ -37,7 +37,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
     const handleBeforeUnload = (e) => {
       if (uploadState === 'uploading') {
         e.preventDefault();
-        e.returnValue = 'Hay una subida en progreso. ¿Estás seguro de que quieres salir?';
+        e.returnValue = 'A file upload is in progress. Are you sure you want to leave?';
         return e.returnValue;
       }
     };
@@ -47,10 +47,10 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
 
   const validateFile = (f) => {
     if (!ALLOWED_TYPES.includes(f.type)) {
-      return 'Tipo de archivo no permitido. Solo PDF, DOCX e imágenes (JPG, PNG, GIF, WEBP).';
+      return 'File type not allowed. Only PDF, DOCX, and images (JPG, PNG, GIF, WEBP).';
     }
     if (f.size > MAX_SIZE_BYTES) {
-      return `El archivo supera el límite de 20 MB (tamaño actual: ${formatBytes(f.size)}).`;
+      return `File exceeds the 20 MB limit (current size: ${formatBytes(f.size)}).`;
     }
     return '';
   };
@@ -107,8 +107,8 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
         setUploadState('error');
         setErrorMessage(
           error.code === 'storage/unauthorized'
-            ? 'Sin permisos para subir archivos. Verifica las reglas de Storage.'
-            : 'Error al subir el archivo. Intenta nuevamente.'
+            ? 'No permission to upload files. Check your Storage rules.'
+            : 'Failed to upload the file. Please try again.'
         );
       },
       async () => {
@@ -118,7 +118,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
           await addDoc(collection(db, 'tareas'), {
             conversationId,
             uploadedBy: currentUser.uid,
-            uploaderName: currentUser.displayName || 'Usuario',
+            uploaderName: currentUser.displayName || 'User',
             uploaderRole: userRole || 'student',
             fileName: safeName,
             originalName: file.name,
@@ -141,7 +141,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
         } catch (err) {
           console.error('[TaskUpload] Firestore error:', err.message);
           setUploadState('error');
-          setErrorMessage('Archivo subido pero no se pudo guardar el registro. Contacta al soporte.');
+          setErrorMessage('File uploaded but the record could not be saved. Please contact support.');
         }
       }
     );
@@ -163,7 +163,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-gray-800 flex items-center gap-2 text-sm">
             <Paperclip className="w-4 h-4 text-academic-blue" />
-            Adjuntar Tarea
+            Attach File
           </h3>
           <button
             type="button"
@@ -194,8 +194,8 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
             {!file ? (
               <div className="space-y-1">
                 <UploadCloud className="w-8 h-8 text-gray-400 mx-auto" />
-                <p className="text-sm text-gray-600 font-medium">Arrastra un archivo o haz clic para seleccionar</p>
-                <p className="text-xs text-gray-400">PDF, DOCX, imágenes — máximo 20 MB</p>
+                <p className="text-sm text-gray-600 font-medium">Drag a file or click to select</p>
+                <p className="text-xs text-gray-400">PDF, DOCX, images — max 20 MB</p>
               </div>
             ) : (
               <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
@@ -211,7 +211,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
                     type="button"
                     onClick={handleReset}
                     className="text-gray-400 hover:text-red-500 flex-shrink-0"
-                    title="Quitar archivo"
+                    title="Remove file"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -234,7 +234,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-gray-500">
               <span className="flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" /> Subiendo…
+                <Loader2 className="w-3 h-3 animate-spin" /> Uploading…
               </span>
               <span>{uploadProgress}%</span>
             </div>
@@ -244,7 +244,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400">No cierres esta pestaña hasta que termine la subida.</p>
+            <p className="text-xs text-gray-400">Don't close this tab until the upload finishes.</p>
           </div>
         )}
 
@@ -253,7 +253,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
           <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-3">
             <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-green-700">¡Archivo subido correctamente!</p>
+              <p className="text-sm font-semibold text-green-700">File uploaded successfully!</p>
               <p className="text-xs text-gray-500 truncate">{file?.name}</p>
             </div>
             <button
@@ -261,7 +261,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
               onClick={onCancel}
               className="text-xs text-green-600 hover:text-green-800 font-semibold"
             >
-              Cerrar
+              Close
             </button>
           </div>
         )}
@@ -278,7 +278,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
               onClick={() => setUploadState('idle')}
               className="text-xs text-red-600 hover:text-red-800 font-semibold flex-shrink-0"
             >
-              Reintentar
+              Retry
             </button>
           </div>
         )}
@@ -291,7 +291,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
               onClick={onCancel}
               className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-600 font-semibold hover:bg-gray-50 transition-colors text-sm"
             >
-              Cancelar
+              Cancel
             </button>
             <button
               type="button"
@@ -300,7 +300,7 @@ const TaskUpload = ({ conversationId, onUploaded, onCancel }) => {
               className="flex-1 py-2 bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
             >
               <UploadCloud className="w-4 h-4" />
-              Subir Archivo
+              Upload File
             </button>
           </div>
         )}

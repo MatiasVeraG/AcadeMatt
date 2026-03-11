@@ -34,7 +34,7 @@ const AdminPanel = ({ onClose }) => {
       setUsers(sorted);
     } catch (err) {
       console.error('Error loading users:', err);
-      setError('Error al cargar usuarios: ' + err.message);
+      setError('Failed to load users: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,7 @@ const AdminPanel = ({ onClose }) => {
 
   const handleRoleChange = async (userId, newRole) => {
     if (userId === currentUser.uid) {
-      setError('No puedes cambiar tu propio rol');
+      setError('You cannot change your own role');
       return;
     }
 
@@ -58,11 +58,11 @@ const AdminPanel = ({ onClose }) => {
         user.id === userId ? { ...user, role: newRole } : user
       ));
       
-      setSuccess(`Rol actualizado exitosamente`);
+      setSuccess('Role updated successfully');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       console.error('Error updating role:', err);
-      setError('Error al actualizar rol: ' + err.message);
+      setError('Failed to update role: ' + err.message);
     } finally {
       setUpdating(null);
     }
@@ -74,10 +74,10 @@ const AdminPanel = ({ onClose }) => {
       setError('');
       await setDefaultTutor(selectedDefault || null);
       setDefaultTutorId(selectedDefault || null);
-      setSuccess('Tutor de respaldo actualizado');
+      setSuccess('Backup tutor updated');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Error al guardar tutor de respaldo: ' + err.message);
+      setError('Failed to save backup tutor: ' + err.message);
     } finally {
       setSavingDefault(false);
     }
@@ -85,7 +85,7 @@ const AdminPanel = ({ onClose }) => {
 
   const getRoleBadge = (role) => {
     const badges = {
-      student: { label: 'Estudiante', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+      student: { label: 'Student', color: 'bg-blue-100 text-blue-700 border-blue-300' },
       tutor: { label: 'Tutor', color: 'bg-green-100 text-green-700 border-green-300' },
       admin: { label: 'Admin', color: 'bg-purple-100 text-purple-700 border-purple-300' }
     };
@@ -104,15 +104,15 @@ const AdminPanel = ({ onClose }) => {
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-8 max-w-md">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-center mb-2">Acceso Denegado</h2>
+          <h2 className="text-2xl font-bold text-center mb-2">Access Denied</h2>
           <p className="text-gray-600 text-center mb-6">
-            Solo los administradores pueden acceder a este panel.
+            Only administrators can access this panel.
           </p>
           <button
             onClick={onClose}
             className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700"
           >
-            Cerrar
+            Close
           </button>
         </div>
       </div>
@@ -127,8 +127,8 @@ const AdminPanel = ({ onClose }) => {
           <div className="flex items-center gap-3">
             <Shield className="w-8 h-8" />
             <div>
-              <h2 className="text-2xl font-bold">Panel de Administración</h2>
-              <p className="text-purple-100 text-sm">Gestión de roles de usuarios</p>
+              <h2 className="text-2xl font-bold">Admin Panel</h2>
+              <p className="text-purple-100 text-sm">User role management</p>
             </div>
           </div>
           <button 
@@ -160,10 +160,10 @@ const AdminPanel = ({ onClose }) => {
           <div className="mb-6 border border-yellow-200 bg-yellow-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <Star className="w-5 h-5 text-yellow-500" />
-              <h3 className="font-semibold text-gray-800">Tutor de Respaldo</h3>
+              <h3 className="font-semibold text-gray-800">Backup Tutor</h3>
             </div>
             <p className="text-sm text-gray-600 mb-3">
-              Si no hay tutores disponibles, las consultas se asignan automáticamente a este tutor.
+              If no tutors are available, new consultations are automatically assigned to this tutor.
             </p>
             <div className="flex gap-2">
               <select
@@ -171,7 +171,7 @@ const AdminPanel = ({ onClose }) => {
                 onChange={(e) => setSelectedDefault(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
               >
-                <option value="">— Sin tutor de respaldo —</option>
+                <option value="">— No backup tutor —</option>
                 {users.filter(u => u.role === 'tutor' || u.role === 'admin').map(u => (
                   <option key={u.id} value={u.id}>
                     {u.displayName || u.email}{u.id === defaultTutorId ? ' ⭐ (actual)' : ''}
@@ -193,7 +193,7 @@ const AdminPanel = ({ onClose }) => {
           <div className="mb-4 flex justify-between items-center">
             <div className="flex items-center gap-2 text-gray-600">
               <Users className="w-5 h-5" />
-              <span className="font-medium">{users.length} usuarios registrados</span>
+              <span className="font-medium">{users.length} registered users</span>
             </div>
             <button
               onClick={loadUsers}
@@ -201,7 +201,7 @@ const AdminPanel = ({ onClose }) => {
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Actualizar
+              Refresh
             </button>
           </div>
 
@@ -209,12 +209,12 @@ const AdminPanel = ({ onClose }) => {
           {loading ? (
             <div className="text-center py-12">
               <RefreshCw className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
-              <p className="text-gray-500">Cargando usuarios...</p>
+              <p className="text-gray-500">Loading users...</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No hay usuarios registrados</p>
+              <p className="text-gray-500">No registered users</p>
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -231,14 +231,14 @@ const AdminPanel = ({ onClose }) => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-gray-800 truncate">
-                          {user.displayName || 'Sin nombre'}
+                          {user.displayName || 'No name'}
                           {user.id === currentUser.uid && (
-                            <span className="ml-2 text-xs text-gray-500">(Tú)</span>
+                            <span className="ml-2 text-xs text-gray-500">(You)</span>
                           )}
                         </div>
                         <div className="text-sm text-gray-500 truncate">{user.email}</div>
                         <div className="text-xs text-gray-400">
-                          Registrado: {new Date(user.createdAt).toLocaleDateString('es-ES')}
+                          Registered: {new Date(user.createdAt).toLocaleDateString('en-US')}
                         </div>
                       </div>
                     </div>
@@ -252,7 +252,7 @@ const AdminPanel = ({ onClose }) => {
                         disabled={updating === user.id || user.id === currentUser.uid}
                         className={`px-3 py-2 border rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed ${getRoleBadge(user.role).color}`}
                       >
-                        <option value="student">🎓 Estudiante</option>
+                        <option value="student">🎓 Student</option>
                         <option value="tutor">👨‍🏫 Tutor</option>
                         <option value="admin">👑 Admin</option>
                       </select>

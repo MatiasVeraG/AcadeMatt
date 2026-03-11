@@ -25,7 +25,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
         await login(email, password);
       } else {
         if (password.length < 6) {
-          throw new Error('La contraseña debe tener al menos 6 caracteres');
+          throw new Error('Password must be at least 6 characters');
         }
         // Todos los nuevos usuarios son estudiantes por defecto
         await signup(email, password, displayName, 'student');
@@ -55,14 +55,14 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
 
   const getErrorMessage = (code) => {
     const errors = {
-      'auth/email-already-in-use': 'Este email ya está registrado',
-      'auth/invalid-email': 'Email inválido',
-      'auth/user-not-found': 'No existe una cuenta con este email',
-      'auth/wrong-password': 'Contraseña incorrecta',
-      'auth/weak-password': 'Contraseña demasiado débil',
-      'auth/invalid-credential': 'Credenciales inválidas',
+      'auth/email-already-in-use': 'This email is already registered',
+      'auth/invalid-email': 'Invalid email address',
+      'auth/user-not-found': 'No account found with this email',
+      'auth/wrong-password': 'Incorrect password',
+      'auth/weak-password': 'Password is too weak',
+      'auth/invalid-credential': 'Invalid credentials',
     };
-    return errors[code] || 'Ocurrió un error. Intenta nuevamente.';
+    return errors[code] || 'An error occurred. Please try again.';
   };
 
   const handleForgotPassword = async (e) => {

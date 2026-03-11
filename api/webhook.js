@@ -85,7 +85,7 @@ export default async function handler(req, res) {
           senderId: 'system',
           senderName: 'Sistema',
           senderRole: 'system',
-          text: `✅ ¡Pago confirmado por $${offer.amount.toFixed(2)} USD! El espacio de trabajo está habilitado. El tutor comenzará a trabajar en tu consulta.`,
+          text: `✅ Payment confirmed for $${offer.amount.toFixed(2)} USD! The workspace is now enabled. Your tutor will begin working on your consultation.`,
           timestamp: paidAt,
           read: false,
         });
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         userId: offer.tutorId,
         type: 'payment_received',
         conversationId,
-        message: `💰 ¡Pago recibido! El estudiante pagó $${offer.amount.toFixed(2)} USD. Tu ganancia neta: $${offer.tutorEarnings.toFixed(2)} USD (comisión del 10% descontada: $${offer.platformFee.toFixed(2)} USD).`,
+        message: `💰 Payment received! The student paid $${offer.amount.toFixed(2)} USD. Your net earnings: $${offer.tutorEarnings.toFixed(2)} USD (10% platform fee deducted: $${offer.platformFee.toFixed(2)} USD).`,
         amount: offer.amount,
         tutorEarnings: offer.tutorEarnings,
         platformFee: offer.platformFee,

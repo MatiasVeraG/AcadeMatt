@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { MessageSquare } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import Hero from './components/Hero';
 import AuthPage from './components/AuthPage';
 import Sidebar from './components/Sidebar';
 import Chat from './components/Chat';
 import AdminPanel from './components/AdminPanel';
-import TutorDashboard from './components/TutorDashboard';
-import StudentDashboard from './components/StudentDashboard';
 import PaymentsPanel from './components/PaymentsPanel';
+import ConversationList from './components/ConversationList';
 
 function App() {
   const { currentUser, userRole } = useAuth();
@@ -87,32 +87,45 @@ function App() {
             currentView={currentView}
             onChangeView={handleChangeView}
           />
-          
-          <main className="flex-1 h-screen overflow-hidden">
-            {currentConversationId ? (
-              <Chat
-                conversationId={currentConversationId}
-                onShowPaymentModal={handleShowPaymentModal}
-                onBack={() => setCurrentConversationId(null)}
-              />
-            ) : currentView === 'payments' ? (
-              <PaymentsPanel />
-            ) : userRole === 'student' ? (
-              <StudentDashboard
-                onSelectConversation={handleSelectConversation}
-                currentView={currentView}
-              />
-            ) : (userRole === 'tutor' || userRole === 'admin') ? (
-              <TutorDashboard
-                onSelectConversation={handleSelectConversation}
-                currentView={currentView}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500">Cargando...</p>
-              </div>
-            )}
-          </main>
+
+          {/* WhatsApp Web-style two-panel layout */}
+          <div className="flex flex-1 h-screen overflow-hidden">
+
+            {/* Left panel — hidden on mobile when a chat is open */}
+            <div className={`h-full flex-shrink-0 ${currentConversationId ? 'hidden md:flex' : 'flex'}`}>
+              {currentView === 'payments' ? (
+                /* Payments: full-width, no left panel */
+                null
+              ) : (
+                <ConversationList
+                  selectedId={currentConversationId}
+                  onSelect={handleSelectConversation}
+                  currentView={currentView}
+                />
+              )}
+            </div>
+
+            {/* Right panel */}
+            <main className="flex-1 h-full overflow-hidden">
+              {currentView === 'payments' ? (
+                <PaymentsPanel />
+              ) : currentConversationId ? (
+                <Chat
+                  conversationId={currentConversationId}
+                  onShowPaymentModal={handleShowPaymentModal}
+                  onBack={() => setCurrentConversationId(null)}
+                />
+              ) : (
+                /* Empty state — desktop only (on mobile the list takes full width) */
+                <div className="hidden md:flex items-center justify-center h-full bg-slate-50">
+                  <div className="text-center text-slate-400">
+                    <MessageSquare className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-['Inter']">Select a conversation to get started</p>
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
         </div>
 
         {isAdminPanelOpen && (

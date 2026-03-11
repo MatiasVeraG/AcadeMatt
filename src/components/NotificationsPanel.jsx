@@ -52,9 +52,9 @@ const NotificationsPanel = ({ userId }) => {
     if (!ts) return '';
     const d = typeof ts === 'string' ? new Date(ts) : ts.toDate?.() ?? new Date(ts);
     const diff = Date.now() - d.getTime();
-    if (diff < 3600000) return `Hace ${Math.floor(diff / 60000)} min`;
-    if (diff < 86400000) return `Hace ${Math.floor(diff / 3600000)}h`;
-    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
   };
 
   return (
@@ -73,7 +73,7 @@ const NotificationsPanel = ({ userId }) => {
             </span>
           )}
         </div>
-        <span className="font-medium">Notificaciones</span>
+        <span className="font-medium">Notifications</span>
         {unreadCount > 0 && (
           <span className={`ml-auto text-xs font-bold px-2 py-0.5 rounded-full ${
             isOpen ? 'bg-white text-academic-blue' : 'bg-red-100 text-red-600'
@@ -86,7 +86,7 @@ const NotificationsPanel = ({ userId }) => {
       {isOpen && (
         <div className="absolute left-0 right-0 bottom-full mb-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 flex flex-col max-h-72 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
-            <span className="font-semibold text-gray-800 text-sm">Notificaciones</span>
+            <span className="font-semibold text-gray-800 text-sm">Notifications</span>
             <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">
               <X className="w-4 h-4" />
             </button>
@@ -96,7 +96,7 @@ const NotificationsPanel = ({ userId }) => {
             {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-400 text-sm">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                Sin notificaciones
+                No notifications
               </div>
             ) : (
               notifications.map(n => (

@@ -221,7 +221,7 @@ export const AuthProvider = ({ children }) => {
         senderId: 'system',
         senderName: 'Sistema',
         senderRole: 'system',
-        text: '¡Hola! Tu consulta ha sido recibida. Estamos buscando al mejor tutor disponible para ayudarte.',
+        text: 'Hello! Your consultation has been received. We are finding the best available tutor for you.',
         timestamp: new Date().toISOString(),
         read: false
       });

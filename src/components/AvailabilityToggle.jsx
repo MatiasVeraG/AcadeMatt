@@ -21,7 +21,7 @@ const AvailabilityToggle = () => {
           setIsAvailable(userDoc.data().available || false);
         }
       } catch (error) {
-        console.error('Error obteniendo disponibilidad:', error);
+        console.error('Error fetching availability:', error);
       } finally {
         setIsFetching(false);
       }
@@ -37,8 +37,8 @@ const AvailabilityToggle = () => {
       await setAvailability(newAvailability);
       setIsAvailable(newAvailability);
     } catch (error) {
-      console.error('Error cambiando disponibilidad:', error);
-      alert('Error al cambiar disponibilidad. Intenta nuevamente.');
+      console.error('Error toggling availability:', error);
+      alert('Failed to update availability. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -60,9 +60,9 @@ const AvailabilityToggle = () => {
             <Power className={`w-5 h-5 ${isAvailable ? 'text-green-600' : 'text-gray-400'}`} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">Disponibilidad</h3>
+            <h3 className="font-semibold text-gray-800">Availability</h3>
             <p className="text-sm text-gray-500">
-              {isAvailable ? 'Recibiendo consultas' : 'No disponible'}
+              {isAvailable ? 'Accepting consultations' : 'Not available'}
             </p>
           </div>
         </div>

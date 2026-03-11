@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel, currentView, onChangeVie
     try {
       await logout();
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error('Error signing out:', error);
     }
   };
 
@@ -128,7 +128,7 @@ const Sidebar = ({ isOpen, setIsOpen, onOpenAdminPanel, currentView, onChangeVie
                 className="mx-4 flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:from-purple-700 hover:to-purple-900 shadow-lg transition-all"
               >
                 <Shield className="w-5 h-5" />
-                <span className="font-medium text-[15px]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Panel Admin</span>
+                <span className="font-medium text-[15px]" style={{ fontFamily: "'DM Sans', sans-serif" }}>Admin Panel</span>
               </button>
             </>
           )}

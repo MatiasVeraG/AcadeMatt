@@ -58,7 +58,7 @@ export default async function handler(req, res) {
               senderId: 'system',
               senderName: 'Sistema',
               senderRole: 'system',
-              text: `No hay tutores disponibles en este momento. ${defaultTutorName} ha sido asignado como tu tutor de respaldo y te responderá pronto.`,
+              text: `No tutors are available right now. ${defaultTutorName} has been assigned as your backup tutor and will respond shortly.`,
               timestamp: assignedAt,
               read: false,
             });
@@ -72,7 +72,7 @@ export default async function handler(req, res) {
           senderId: 'system',
           senderName: 'Sistema',
           senderRole: 'system',
-          text: 'Lo sentimos, no hay tutores disponibles en este momento. Te contactaremos cuando uno esté disponible.',
+          text: 'Sorry, no tutors are available at the moment. We will contact you when one becomes available.',
           timestamp: new Date().toISOString(),
           read: false,
         });
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
         senderId: 'system',
         senderName: 'Sistema',
         senderRole: 'system',
-        text: `¡Excelente! ${selected.tutorName} ha sido asignado como tu tutor. Te responderá pronto.`,
+        text: `Great news! ${selected.tutorName} has been assigned as your tutor and will respond shortly.`,
         timestamp: assignedAt,
         read: false,
       });
