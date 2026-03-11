@@ -12,6 +12,7 @@ const AdminPanel = ({ onClose }) => {
   const [defaultTutorId, setDefaultTutorId] = useState(null);
   const [selectedDefault, setSelectedDefault] = useState('');
   const [savingDefault, setSavingDefault] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -121,7 +122,7 @@ const AdminPanel = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-4xl w-full my-8 shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-4xl w-full my-4 shadow-2xl flex flex-col max-h-[calc(100vh-2rem)]">
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
@@ -140,7 +141,7 @@ const AdminPanel = ({ onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Messages */}
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
@@ -189,20 +190,29 @@ const AdminPanel = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Refresh Button */}
-          <div className="mb-4 flex justify-between items-center">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Users className="w-5 h-5" />
-              <span className="font-medium">{users.length} registered users</span>
+          {/* Refresh + Search */}
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2 text-gray-600">
+                <Users className="w-5 h-5" />
+                <span className="font-medium">{users.length} registered users</span>
+              </div>
+              <button
+                onClick={loadUsers}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
             </div>
-            <button
-              onClick={loadUsers}
-              disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+            <input
+              type="text"
+              placeholder="Search by email..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
           </div>
 
           {/* Users List */}
@@ -217,8 +227,8 @@ const AdminPanel = ({ onClose }) => {
               <p className="text-gray-500">No registered users</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {users.map((user) => (
+            <div className="space-y-3">
+              {users.filter(u => !search.trim() || (u.email || '').toLowerCase().includes(search.trim().toLowerCase())).map((user) => (
                 <div
                   key={user.id}
                   className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"

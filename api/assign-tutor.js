@@ -58,7 +58,7 @@ export default async function handler(req, res) {
               senderId: 'system',
               senderName: 'Sistema',
               senderRole: 'system',
-              text: `No tutors are available right now. ${defaultTutorName} has been assigned as your backup tutor and will respond shortly.`,
+              text: `${defaultTutorName} has been assigned as your tutor and will respond shortly.`,
               timestamp: assignedAt,
               read: false,
             });
@@ -109,7 +109,7 @@ export default async function handler(req, res) {
         senderId: 'system',
         senderName: 'Sistema',
         senderRole: 'system',
-        text: `Great news! ${selected.tutorName} has been assigned as your tutor and will respond shortly.`,
+        text: `${selected.tutorName} has been assigned as your tutor and will respond shortly.`,
         timestamp: assignedAt,
         read: false,
       });
