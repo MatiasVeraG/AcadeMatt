@@ -240,9 +240,9 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-[#f8f9fd]">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+      <div className="bg-white border-b border-[#e6eff5] px-6 py-4">
         <div className="flex items-center gap-4">
           {onBack && (
             <button
@@ -420,20 +420,20 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
                 )}
 
                 {!isSystem && !isCurrentUser && (
-                  <div className="flex gap-2">
-                    <div className="w-8 h-8 bg-academic-blue rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 bg-[#3D64FD] rounded-[8px] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
                       {getInitials(message.senderName)}
                     </div>
                     <div>
-                      <div className="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm border border-gray-200">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">{message.senderName}</p>
+                      <div className="bg-white rounded-2xl rounded-tl-none px-4 py-3 shadow-sm border border-[#e6eff5]">
+                        <p className="text-xs text-[#9fa7be] font-semibold mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>{message.senderName}</p>
                         {message.fileURL ? (
                           <FileMessageBubble fileName={message.fileName} fileType={message.fileType} fileSize={message.fileSize} fileURL={message.fileURL} />
                         ) : (
-                          <p className="text-gray-800">{message.text}</p>
+                          <p className="text-gray-800 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>{message.text}</p>
                         )}
                       </div>
-                      <span className="text-xs text-gray-400 ml-2 mt-1 block">
+                      <span className="text-xs text-[#9fa7be] ml-2 mt-1 block" style={{ fontFamily: "'Inter', sans-serif" }}>
                         {formatTime(message.timestamp)}
                       </span>
                     </div>
@@ -442,14 +442,14 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
 
                 {!isSystem && isCurrentUser && (
                   <div>
-                    <div className="bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm">
+                    <div className="bg-[#3D64FD] text-white rounded-2xl rounded-tr-none px-4 py-3 shadow-sm">
                       {message.fileURL ? (
                         <FileMessageBubble fileName={message.fileName} fileType={message.fileType} fileSize={message.fileSize} fileURL={message.fileURL} light />
                       ) : (
-                        <p>{message.text}</p>
+                        <p className="text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>{message.text}</p>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400 mr-2 mt-1 block text-right">
+                    <span className="text-xs text-[#9fa7be] mr-2 mt-1 block text-right" style={{ fontFamily: "'Inter', sans-serif" }}>
                       {formatTime(message.timestamp)}
                     </span>
                   </div>
@@ -613,27 +613,27 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
       )}
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 px-4 md:px-6 py-4">
-        <div className="flex gap-3 items-end max-w-4xl mx-auto">
-          {/* Attach file button (all roles, open conversations) */}
+      <div className="bg-white border-t border-[#e6eff5] px-4 md:px-6 py-4">
+        <div className="flex gap-2 items-center max-w-4xl mx-auto bg-[#f8f9fd] rounded-[24px] px-4 py-2">
+          {/* Attach file button */}
           {conversation?.status !== 'completed' && !showTaskUpload && (
             <button
               onClick={() => { setShowTaskUpload(true); setShowOfferForm(false); }}
-              className="flex-shrink-0 flex items-center justify-center w-11 h-11 bg-gray-100 border border-gray-300 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+              className="flex-shrink-0 flex items-center justify-center w-8 h-8 text-[#9fa7be] hover:text-[#3D64FD] transition-colors"
               title="Adjuntar archivo"
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className="w-4 h-4" />
             </button>
           )}
 
-          {/* "Crear Oferta" shortcut button for tutors */}
+          {/* "Crear Oferta" shortcut for tutors */}
           {userRole === 'tutor' && !showOfferForm && conversation?.status !== 'completed' && (
             <button
               onClick={() => setShowOfferForm(true)}
-              className="flex-shrink-0 flex items-center gap-1 px-3 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl hover:bg-green-100 transition-colors text-sm font-semibold whitespace-nowrap"
+              className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 rounded-full hover:bg-green-100 transition-colors text-xs font-semibold whitespace-nowrap"
               title="Crear oferta de pago"
             >
-              <DollarSign className="w-4 h-4" />
+              <DollarSign className="w-3.5 h-3.5" />
               Crear Oferta
             </button>
           )}
@@ -642,28 +642,24 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={conversation?.status === 'completed' ? 'Consulta cerrada' : 'Describe tu duda académica...'}
+            placeholder={conversation?.status === 'completed' ? 'Consulta cerrada' : 'Type your message here ...'}
             disabled={conversation?.status === 'completed'}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-academic-blue resize-none min-h-[50px] max-h-[120px] disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-transparent px-2 py-1 focus:outline-none resize-none min-h-[28px] max-h-[120px] text-[11px] text-[#9fa7be] placeholder:text-[#9fa7be] disabled:cursor-not-allowed"
+            style={{ fontFamily: "'Inter', sans-serif" }}
             rows="1"
           />
           <button
             onClick={handleSend}
             disabled={!inputValue.trim() || isSending || conversation?.status === 'completed'}
-            className="bg-gradient-to-r from-academic-blue to-blue-700 text-white p-3 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+            className="flex-shrink-0 w-[24px] h-[24px] bg-[#3D64FD] rounded-full flex items-center justify-center shadow-[0px_2.824px_11.294px_0px_rgba(217,217,217,0.32)] hover:bg-[#2148c0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isSending ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
             ) : (
-              <Send className="w-6 h-6" />
+              <Send className="w-3 h-3 text-white" />
             )}
           </button>
         </div>
-        <p className="text-xs text-gray-400 text-center mt-2">
-          {conversation?.status === 'completed'
-            ? 'Esta consulta ha sido cerrada.'
-            : 'Presiona Enter para enviar \u2022 Shift + Enter para nueva línea'}
-        </p>
       </div>
 
       {/* Review modal — shown to students after a successful/failed consultation */}

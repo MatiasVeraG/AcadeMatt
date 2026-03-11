@@ -145,7 +145,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="absolute inset-0 bg-transparent pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none"
+                    className="absolute inset-0 bg-white/10 pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none rounded-[5px]"
                     style={{ fontFamily: "'Montserrat', sans-serif" }}
                     placeholder="Email"
                     required
@@ -181,7 +181,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
                       type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="absolute inset-0 bg-transparent pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none"
+                      className="absolute inset-0 bg-white/10 pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none rounded-[5px]"
                       style={{ fontFamily: "'Montserrat', sans-serif" }}
                       placeholder="Username"
                       required={!isLogin}
@@ -196,7 +196,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="absolute inset-0 bg-transparent pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none"
+                    className="absolute inset-0 bg-white/10 pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none rounded-[5px]"
                     style={{ fontFamily: "'Montserrat', sans-serif" }}
                     placeholder="Email"
                     required
@@ -210,7 +210,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="absolute inset-0 bg-transparent pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none"
+                    className="absolute inset-0 bg-white/10 pl-12 pr-4 text-white text-[17.485px] font-light uppercase placeholder:text-white/60 focus:outline-none rounded-[5px]"
                     style={{ fontFamily: "'Montserrat', sans-serif" }}
                     placeholder="Password"
                     required
@@ -252,7 +252,8 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading}
-                className="w-full bg-white text-gray-700 py-2.5 rounded text-sm font-medium hover:bg-gray-50 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                className="w-full bg-white/10 border border-white/30 text-white py-2.5 rounded-[5px] text-sm font-medium hover:bg-white/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -264,7 +265,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
               </button>
 
               {/* Toggle Login/Register */}
-              <p className="mt-6 text-center text-sm text-white/70">
+              <p className="mt-5 text-center text-sm text-white/60">
                 {isLogin ? "Don't have an account? " : 'Already have an account? '}
                 <button
                   type="button"
