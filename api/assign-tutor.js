@@ -3,6 +3,9 @@ import { verifyToken } from './_lib/auth.js';
 import { applyCors } from './_lib/cors.js';
 import { sanitizeString } from './_lib/sanitize.js';
 
+const assignmentMessage = (tutorName) =>
+  `${tutorName} has been assigned as your tutor and will respond shortly.`;
+
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
 
@@ -58,7 +61,7 @@ export default async function handler(req, res) {
               senderId: 'system',
               senderName: 'Sistema',
               senderRole: 'system',
-              text: `${defaultTutorName} has been assigned as your tutor and will respond shortly.`,
+              text: assignmentMessage(defaultTutorName),
               timestamp: assignedAt,
               read: false,
             });
@@ -109,7 +112,7 @@ export default async function handler(req, res) {
         senderId: 'system',
         senderName: 'Sistema',
         senderRole: 'system',
-        text: `${selected.tutorName} has been assigned as your tutor and will respond shortly.`,
+        text: assignmentMessage(selected.tutorName),
         timestamp: assignedAt,
         read: false,
       });

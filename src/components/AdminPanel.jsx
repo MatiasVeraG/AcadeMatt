@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Users, RefreshCw, AlertCircle, CheckCircle, X, Star } from 'lucide-react';
+import { Shield, Users, RefreshCw, AlertCircle, CheckCircle, X, Star, MessageSquare, UserCheck } from 'lucide-react';
 
 const AdminPanel = ({ onClose }) => {
-  const { getAllUsers, updateUserRole, setDefaultTutor, getDefaultTutor, currentUser, userRole } = useAuth();
+  const { getAllUsers, updateUserRole, setDefaultTutor, getDefaultTutor, currentUser, userRole, getUserConversations, adminAssignTutor } = useAuth();
+  const [tab, setTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
@@ -13,6 +14,12 @@ const AdminPanel = ({ onClose }) => {
   const [selectedDefault, setSelectedDefault] = useState('');
   const [savingDefault, setSavingDefault] = useState(false);
   const [search, setSearch] = useState('');
+  const [conversations, setConversations] = useState([]);
+  const [loadingConvs, setLoadingConvs] = useState(false);
+  const [convSearch, setConvSearch] = useState('');
+  const [convFilter, setConvFilter] = useState('all');
+  const [assigningConv, setAssigningConv] = useState(null);
+  const [convTutorSelections, setConvTutorSelections] = useState({});
 
   useEffect(() => {
     loadUsers();
@@ -21,6 +28,59 @@ const AdminPanel = ({ onClose }) => {
       setSelectedDefault(id || '');
     }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (tab === 'conversations') loadConversations();
+  }, [tab]);
+
+  const loadConversations = async () => {
+    try {
+      setLoadingConvs(true);
+      const list = await getUserConversations();
+      list.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+      setConversations(list);
+      // init selector defaults
+      const defaults = {};
+      list.forEach(c => { defaults[c.id] = c.tutorId || ''; });
+      setConvTutorSelections(prev => ({ ...defaults, ...prev }));
+    } catch (err) {
+      setError('Error al cargar conversaciones: ' + err.message);
+    } finally {
+      setLoadingConvs(false);
+    }
+  };
+
+  const handleAssignTutor = async (conversationId) => {
+    const tutorId = convTutorSelections[conversationId];
+    if (!tutorId) return;
+    try {
+      setAssigningConv(conversationId);
+      setError('');
+      setSuccess('');
+      const result = await adminAssignTutor(conversationId, tutorId);
+      setConversations(prev => prev.map(c =>
+        c.id === conversationId
+          ? { ...c, tutorId: result.tutorId, tutorName: result.tutorName, status: 'assigned' }
+          : c
+      ));
+      setSuccess(`Tutor asignado: ${result.tutorName}`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Error al asignar tutor: ' + err.message);
+    } finally {
+      setAssigningConv(null);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const map = {
+      pending:   'bg-yellow-100 text-yellow-700 border-yellow-300',
+      assigned:  'bg-blue-100 text-blue-700 border-blue-300',
+      completed: 'bg-green-100 text-green-700 border-green-300',
+      failed:    'bg-red-100 text-red-700 border-red-300',
+    };
+    return map[status] || 'bg-gray-100 text-gray-700 border-gray-300';
+  };
 
   const loadUsers = async () => {
     try {
@@ -140,6 +200,32 @@ const AdminPanel = ({ onClose }) => {
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200 bg-gray-50">
+          <button
+            onClick={() => setTab('users')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              tab === 'users'
+                ? 'border-purple-600 text-purple-700 bg-white'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            Usuarios
+          </button>
+          <button
+            onClick={() => setTab('conversations')}
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              tab === 'conversations'
+                ? 'border-purple-600 text-purple-700 bg-white'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Conversaciones
+          </button>
+        </div>
+
         {/* Content */}
         <div className="p-6 overflow-y-auto flex-1">
           {/* Messages */}
@@ -156,6 +242,9 @@ const AdminPanel = ({ onClose }) => {
               <p className="text-sm text-green-700">{success}</p>
             </div>
           )}
+
+          {/* ── USERS TAB ── */}
+          {tab === 'users' && <>
 
           {/* Default Tutor Selector */}
           <div className="mb-6 border border-yellow-200 bg-yellow-50 rounded-xl p-4">
@@ -274,6 +363,124 @@ const AdminPanel = ({ onClose }) => {
                 </div>
               ))}
             </div>
+          )}
+          </> /* end users tab */}
+
+          {/* ── CONVERSATIONS TAB ── */}
+          {tab === 'conversations' && (
+            <>
+              {/* Filters */}
+              <div className="mb-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="font-medium">{conversations.length} conversaciones</span>
+                  </div>
+                  <button
+                    onClick={loadConversations}
+                    disabled={loadingConvs}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loadingConvs ? 'animate-spin' : ''}`} />
+                    Actualizar
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Buscar por asignatura o alumno..."
+                    value={convSearch}
+                    onChange={e => setConvSearch(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  />
+                  <select
+                    value={convFilter}
+                    onChange={e => setConvFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="pending">Pendientes</option>
+                    <option value="assigned">Asignados</option>
+                    <option value="completed">Completados</option>
+                  </select>
+                </div>
+              </div>
+
+              {loadingConvs ? (
+                <div className="text-center py-12">
+                  <RefreshCw className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-500">Cargando conversaciones...</p>
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay conversaciones</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {conversations
+                    .filter(c => {
+                      const matchStatus = convFilter === 'all' || c.status === convFilter;
+                      const q = convSearch.trim().toLowerCase();
+                      const matchSearch = !q ||
+                        (c.subject || '').toLowerCase().includes(q) ||
+                        (c.studentName || '').toLowerCase().includes(q);
+                      return matchStatus && matchSearch;
+                    })
+                    .map(conv => {
+                      const tutors = users.filter(u => u.role === 'tutor' || u.role === 'admin');
+                      const selectedTutorId = convTutorSelections[conv.id] ?? (conv.tutorId || '');
+                      const isDirty = selectedTutorId !== (conv.tutorId || '');
+                      return (
+                        <div key={conv.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex flex-col gap-3">
+                            {/* Conv info */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-gray-800 truncate">{conv.subject || 'Sin asignatura'}</div>
+                                <div className="text-sm text-gray-500">Alumno: {conv.studentName || conv.studentId}</div>
+                                {conv.tutorName && (
+                                  <div className="text-sm text-gray-500">Tutor actual: <span className="font-medium text-blue-700">{conv.tutorName}</span></div>
+                                )}
+                                <div className="text-xs text-gray-400">{new Date(conv.createdAt).toLocaleString('es-ES')}</div>
+                              </div>
+                              <span className={`text-xs px-2 py-1 rounded-full border font-medium flex-shrink-0 ${getStatusBadge(conv.status)}`}>
+                                {conv.status}
+                              </span>
+                            </div>
+
+                            {/* Assign row */}
+                            <div className="flex gap-2">
+                              <select
+                                value={selectedTutorId}
+                                onChange={e => setConvTutorSelections(prev => ({ ...prev, [conv.id]: e.target.value }))}
+                                disabled={assigningConv === conv.id}
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50"
+                              >
+                                <option value="">— Sin tutor —</option>
+                                {tutors.map(t => (
+                                  <option key={t.id} value={t.id}>{t.displayName || t.email}</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => handleAssignTutor(conv.id)}
+                                disabled={!selectedTutorId || !isDirty || assigningConv === conv.id}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              >
+                                {assigningConv === conv.id
+                                  ? <RefreshCw className="w-4 h-4 animate-spin" />
+                                  : <UserCheck className="w-4 h-4" />}
+                                Asignar
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  }
+                </div>
+              )}
+            </>
           )}
         </div>
 

@@ -415,6 +415,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Asignar tutor manualmente (solo admins)
+  const adminAssignTutor = async (conversationId, tutorId) => {
+    if (!currentUser) throw new Error('Debes iniciar sesión');
+    if (userRole !== 'admin') throw new Error('Solo los administradores pueden realizar esta acción');
+    const token = await currentUser.getIdToken();
+    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+    const response = await fetch(`${apiUrl}/api/admin-assign-tutor`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ conversationId, tutorId }),
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Error al asignar tutor');
+    }
+    return response.json();
+  };
+
   // Crear oferta de pago: llama al backend que genera el checkout en Lemon Squeezy
   // y persiste la oferta en Firestore.
   const createOffer = async (conversationId, amount, description) => {
@@ -493,6 +514,7 @@ export const AuthProvider = ({ children }) => {
     moveToInProgress,
     submitReview,
     getUserConversations,
+    adminAssignTutor,
     createOffer,
     loading
   };
