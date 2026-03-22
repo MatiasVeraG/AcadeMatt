@@ -5,6 +5,27 @@ import { applyCors } from './_lib/cors.js';
 import { sanitizeString, sanitizeAmount } from './_lib/sanitize.js';
 
 const COMMISSION_RATE = 0.10;
+const PAYPAL_API_BASE = {
+  sandbox: 'https://api-m.sandbox.paypal.com',
+  live: 'https://api-m.paypal.com',
+};
+
+async function getPayPalAccessToken({ clientId, clientSecret, apiBaseUrl }) {
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+  const tokenResponse = await axios.post(
+    `${apiBaseUrl}/v1/oauth2/token`,
+    'grant_type=client_credentials',
+    {
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  );
+
+  return tokenResponse.data?.access_token;
+}
 
 export default async function handler(req, res) {
   if (applyCors(req, res)) return;
@@ -53,62 +74,74 @@ export default async function handler(req, res) {
 
   try {
     const {
-      LEMONSQUEEZY_API_KEY,
-      LEMONSQUEEZY_STORE_ID,
-      LEMONSQUEEZY_VARIANT_ID,
+      PAYPAL_CLIENT_ID,
+      PAYPAL_CLIENT_SECRET,
+      PAYPAL_ENV,
       FRONTEND_URL,
     } = process.env;
 
-    if (!LEMONSQUEEZY_API_KEY || !LEMONSQUEEZY_STORE_ID || !LEMONSQUEEZY_VARIANT_ID) {
-      const missing = ['LEMONSQUEEZY_API_KEY', 'LEMONSQUEEZY_STORE_ID', 'LEMONSQUEEZY_VARIANT_ID']
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_ENV) {
+      const missing = ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET', 'PAYPAL_ENV']
         .filter(k => !process.env[k]);
       console.error('[Checkout] Missing env vars:', missing);
       return res.status(500).json({ error: `Variables de entorno faltantes: ${missing.join(', ')}` });
     }
 
-    const amountInCents = Math.round(cleanAmount * 100);
-    const redirectUrl = FRONTEND_URL || 'http://localhost:5173';
+    const envKey = (PAYPAL_ENV || 'sandbox').toLowerCase();
+    const apiBaseUrl = PAYPAL_API_BASE[envKey] || PAYPAL_API_BASE.sandbox;
+    const redirectBase = FRONTEND_URL || 'http://localhost:5173';
 
-    const checkoutPayload = {
-      data: {
-        type: 'checkouts',
-        attributes: {
-          custom_price: amountInCents,
-          product_options: {
-            name: `AcadeMatt: ${cleanSubject || 'Asesoría Académica'}`,
-            description: cleanDescription || 'Servicio de tutoría académica personalizada',
-            redirect_url: redirectUrl,
-          },
-          checkout_data: {
-            custom: {
-              conversation_id: cleanConversationId,
-              student_id: cleanStudentId,
-              teacher_id: cleanTutorId,
-              query_id: cleanConversationId,
-            },
+    const accessToken = await getPayPalAccessToken({
+      clientId: PAYPAL_CLIENT_ID,
+      clientSecret: PAYPAL_CLIENT_SECRET,
+      apiBaseUrl,
+    });
+
+    if (!accessToken) {
+      return res.status(500).json({ error: 'No se pudo obtener token de PayPal' });
+    }
+
+    const orderPayload = {
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          reference_id: cleanConversationId,
+          custom_id: cleanConversationId,
+          description: cleanDescription || `AcadeMatt: ${cleanSubject || 'Asesoria Academica'}`,
+          amount: {
+            currency_code: 'USD',
+            value: cleanAmount.toFixed(2),
           },
         },
-        relationships: {
-          store: { data: { type: 'stores', id: String(LEMONSQUEEZY_STORE_ID) } },
-          variant: { data: { type: 'variants', id: String(LEMONSQUEEZY_VARIANT_ID) } },
-        },
+      ],
+      application_context: {
+        brand_name: 'AcadeMatt',
+        user_action: 'PAY_NOW',
+        return_url: `${redirectBase}/?payment=success`,
+        cancel_url: `${redirectBase}/?payment=cancelled`,
       },
     };
 
-    const lsResponse = await axios.post(
-      'https://api.lemonsqueezy.com/v1/checkouts',
-      checkoutPayload,
+    const paypalResponse = await axios.post(
+      `${apiBaseUrl}/v2/checkout/orders`,
+      orderPayload,
       {
         headers: {
-          Authorization: `Bearer ${LEMONSQUEEZY_API_KEY}`,
-          'Content-Type': 'application/vnd.api+json',
-          Accept: 'application/vnd.api+json',
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'PayPal-Request-Id': `${cleanConversationId}-${Date.now()}`,
+          Prefer: 'return=representation',
         },
       }
     );
 
-    const checkoutUrl = lsResponse.data.data.attributes.url;
-    const checkoutId  = lsResponse.data.data.id;
+    const orderId = paypalResponse.data?.id;
+    const checkoutUrl = paypalResponse.data?.links?.find(link => link.rel === 'approve')?.href;
+
+    if (!orderId || !checkoutUrl) {
+      console.error('[Checkout] PayPal response missing orderId or approve URL');
+      return res.status(500).json({ error: 'PayPal no devolvio URL de pago valida' });
+    }
 
     const platformFee   = parseFloat((cleanAmount * COMMISSION_RATE).toFixed(2));
     const tutorEarnings = parseFloat((cleanAmount - platformFee).toFixed(2));
@@ -125,7 +158,8 @@ export default async function handler(req, res) {
       subject: cleanSubject,
       status: 'pending',
       checkoutUrl,
-      checkoutId,
+      paymentProvider: 'paypal',
+      paypalOrderId: orderId,
       createdAt: new Date().toISOString(),
       paidAt: null,
     });
@@ -139,11 +173,11 @@ export default async function handler(req, res) {
     res.json({ success: true, offerId: offerRef.id, checkoutUrl });
 
   } catch (error) {
-    const lsError = error.response?.data;
-    const lsStatus = error.response?.status;
-    console.error('[Checkout] Lemon Squeezy error status:', lsStatus);
-    console.error('[Checkout] Lemon Squeezy error body:', JSON.stringify(lsError || error.message));
-    const detail = lsError?.errors?.[0]?.detail || lsError?.message || error.message;
-    res.status(500).json({ error: 'Error al crear el checkout con Lemon Squeezy', detail, lsStatus });
+    const paypalError = error.response?.data;
+    const paypalStatus = error.response?.status;
+    console.error('[Checkout] PayPal error status:', paypalStatus);
+    console.error('[Checkout] PayPal error body:', JSON.stringify(paypalError || error.message));
+    const detail = paypalError?.message || paypalError?.details?.[0]?.description || error.message;
+    res.status(500).json({ error: 'Error al crear la orden de PayPal', detail, paypalStatus });
   }
 }
