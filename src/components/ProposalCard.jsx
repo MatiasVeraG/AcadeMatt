@@ -72,7 +72,7 @@ const ProposalCard = ({ offer, onAccept }) => {
       </button>
 
       <p className="text-xs text-center text-gray-500 mt-3">
-        ✓ Pago seguro con Lemon Squeezy &nbsp;•&nbsp; ✓ Garantía de satisfacción
+        ✓ Pago seguro &nbsp;•&nbsp; ✓ Garantía de satisfacción
       </p>
     </div>
   );

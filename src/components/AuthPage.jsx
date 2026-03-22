@@ -10,6 +10,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
@@ -18,19 +19,24 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
 
     try {
       if (isLogin) {
         await login(email, password);
+        onAuthSuccess();
       } else {
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters');
         }
         // Todos los nuevos usuarios son estudiantes por defecto
         await signup(email, password, displayName, 'student');
+        setNotice('Te enviamos un email de activacion. Verifica tu correo antes de iniciar sesion.');
+        setIsLogin(true);
+        setPassword('');
+        return;
       }
-      onAuthSuccess();
     } catch (err) {
       console.error(err);
       setError(getErrorMessage(err.code || err.message));
@@ -41,9 +47,13 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
 
   const handleGoogleLogin = async () => {
     setError('');
+    setNotice('');
     setLoading(true);
     try {
-      await loginWithGoogle();
+      const result = await loginWithGoogle();
+      if (result === null) {
+        return;
+      }
       onAuthSuccess();
     } catch (err) {
       console.error(err);
@@ -61,6 +71,10 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       'auth/wrong-password': 'Incorrect password',
       'auth/weak-password': 'Password is too weak',
       'auth/invalid-credential': 'Invalid credentials',
+      'auth/popup-blocked': 'Popup bloqueado por el navegador. Habilita popups para continuar con Google.',
+      'auth/unauthorized-domain': 'Este dominio no esta autorizado en Firebase Auth. Agrega academatt.com en Authorized domains.',
+      'auth/operation-not-allowed': 'Google Sign-In no esta habilitado en Firebase Authentication.',
+      'auth/email-not-verified': 'Debes verificar tu correo antes de iniciar sesion. Te reenviamos el email de activacion.',
     };
     return errors[code] || 'An error occurred. Please try again.';
   };
@@ -116,6 +130,13 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
             <div className="mb-4 bg-white/10 border border-white/30 rounded-lg p-3 flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-red-300 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-red-100">{error}</p>
+            </div>
+          )}
+
+          {notice && (
+            <div className="mb-4 bg-white/10 border border-white/30 rounded-lg p-3 flex items-start gap-2">
+              <CheckCircle className="w-5 h-5 text-green-300 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-green-100">{notice}</p>
             </div>
           )}
 

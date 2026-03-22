@@ -6,8 +6,10 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   updateProfile,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, onSnapshot, deleteDoc, increment } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
@@ -47,7 +49,10 @@ export const AuthProvider = ({ children }) => {
         lastActive: new Date().toISOString()
       });
 
-      return user;
+      await sendEmailVerification(user);
+      await signOut(auth);
+
+      return { user, requiresEmailVerification: true };
     } catch (error) {
       throw error;
     }
@@ -57,6 +62,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        try {
+          await sendEmailVerification(user);
+        } catch (verificationErr) {
+          console.warn('No se pudo reenviar email de verificacion:', verificationErr.message);
+        }
+        await signOut(auth);
+        const err = new Error('auth/email-not-verified');
+        err.code = 'auth/email-not-verified';
+        throw err;
+      }
+
       return userCredential.user;
     } catch (error) {
       throw error;
@@ -67,7 +86,23 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
+      provider.setCustomParameters({ prompt: 'select_account' });
+
+      let userCredential;
+      try {
+        userCredential = await signInWithPopup(auth, provider);
+      } catch (popupError) {
+        if (
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.code === 'auth/cancelled-popup-request'
+        ) {
+          await signInWithRedirect(auth, provider);
+          return null;
+        }
+        throw popupError;
+      }
+
       const user = userCredential.user;
 
       // Verificar si el usuario ya existe en Firestore

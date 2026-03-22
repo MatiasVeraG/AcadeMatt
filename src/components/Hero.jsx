@@ -63,7 +63,7 @@ const Hero = ({ onStartConsultation }) => {
               className="border-2 border-solid border-white px-[19px] py-[11px] rounded-[40px] hover:bg-white/10 transition-colors"
             >
               <span className="font-bold leading-[1.587] text-[15px] text-white tracking-[-0.45px] whitespace-nowrap" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>
-                Review
+                Reseñas
               </span>
             </button>
             <button
