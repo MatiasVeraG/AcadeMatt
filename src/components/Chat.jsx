@@ -611,8 +611,8 @@ const Chat = ({ conversationId, onShowPaymentModal, onBack }) => {
             </button>
           )}
 
-          {/* "Crear Oferta" shortcut for tutors */}
-          {userRole === 'tutor' && !showOfferForm && conversation?.status !== 'completed' && (
+          {/* "Crear Oferta" shortcut for tutors/admins */}
+          {(userRole === 'tutor' || userRole === 'admin') && !showOfferForm && conversation?.status !== 'completed' && (
             <button
               onClick={() => setShowOfferForm(true)}
               className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-green-50 border border-green-200 text-green-700 rounded-full hover:bg-green-100 transition-colors text-xs font-semibold whitespace-nowrap"

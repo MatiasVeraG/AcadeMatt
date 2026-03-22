@@ -436,12 +436,12 @@ export const AuthProvider = ({ children }) => {
     return response.json();
   };
 
-  // Crear oferta de pago: llama al backend que genera el checkout en Lemon Squeezy
+  // Crear oferta de pago: llama al backend que genera el checkout en PayPal
   // y persiste la oferta en Firestore.
   const createOffer = async (conversationId, amount, description) => {
     if (!currentUser) throw new Error('Debes iniciar sesión');
     if (userRole !== 'tutor' && userRole !== 'admin') {
-      throw new Error('Solo los tutores pueden crear ofertas');
+      throw new Error('Solo tutores o admins pueden crear ofertas');
     }
 
     const token = await currentUser.getIdToken();
@@ -452,6 +452,19 @@ export const AuthProvider = ({ children }) => {
     if (!convDoc.exists()) throw new Error('Conversación no encontrada');
     const convData = convDoc.data();
 
+    let effectiveTutorId = currentUser.uid;
+    let effectiveTutorName = currentUser.displayName;
+
+    // If an admin creates the offer on an assigned conversation, keep earnings tied
+    // to the assigned tutor account instead of the admin account.
+    if (userRole === 'admin' && convData.tutorId) {
+      effectiveTutorId = convData.tutorId;
+      const tutorDoc = await getDoc(doc(db, 'users', convData.tutorId));
+      if (tutorDoc.exists()) {
+        effectiveTutorName = tutorDoc.data().displayName || effectiveTutorName;
+      }
+    }
+
     const response = await fetch(`${apiUrl}/api/checkout`, {
       method: 'POST',
       headers: {
@@ -461,8 +474,8 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify({
         conversationId,
         studentId: convData.studentId,
-        tutorId: currentUser.uid,
-        tutorName: currentUser.displayName,
+        tutorId: effectiveTutorId,
+        tutorName: effectiveTutorName,
         amount: parseFloat(amount),
         description: description || '',
         subject: convData.subject || 'Asesoría Académica',

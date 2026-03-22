@@ -85,6 +85,8 @@ service cloud.firestore {
         allow create: if isAuthenticated() && (
           // Mensajes del sistema (asignación automática)
           (request.resource.data.senderId == 'system' && request.resource.data.senderRole == 'system') ||
+          // Admin puede escribir en cualquier conversación
+          isAdmin() ||
           // Mensajes de participantes
           (request.resource.data.senderId == request.auth.uid &&
           (

@@ -39,8 +39,17 @@ export default async function handler(req, res) {
 
   const { conversationId, studentId, tutorId, tutorName, amount, description, subject } = req.body;
 
-  if (decoded.uid !== tutorId) {
-    return res.status(403).json({ error: 'Solo el tutor asignado puede crear una oferta' });
+  let requesterRole = null;
+  try {
+    const requesterDoc = await db.collection('users').doc(decoded.uid).get();
+    requesterRole = requesterDoc.exists ? requesterDoc.data().role : null;
+  } catch (roleError) {
+    console.error('[Checkout] Failed to resolve requester role:', roleError.message);
+  }
+
+  const isAdminRequester = requesterRole === 'admin';
+  if (decoded.uid !== tutorId && !isAdminRequester) {
+    return res.status(403).json({ error: 'Solo el tutor asignado o un admin puede crear una oferta' });
   }
 
   const cleanConversationId = sanitizeString(conversationId, 128);
