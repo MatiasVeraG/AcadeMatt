@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import ReviewsPanel from './ReviewsPanel';
+import ExploreCoursesComingSoon from './ExploreCoursesComingSoon';
 import bgImage from '../../images/BG.png';
 
 const Hero = ({ onStartConsultation }) => {
   const [showReviews, setShowReviews] = useState(false);
+  const [showExploreCourses, setShowExploreCourses] = useState(false);
+
+  if (showExploreCourses) {
+    return <ExploreCoursesComingSoon onBack={() => setShowExploreCourses(false)} />;
+  }
 
   return (
     <>
@@ -67,10 +73,11 @@ const Hero = ({ onStartConsultation }) => {
               </span>
             </button>
             <button
+              onClick={() => setShowExploreCourses(true)}
               className="border-2 border-solid border-white px-[19px] py-[11px] rounded-[40px] hover:bg-white/10 transition-colors"
             >
               <span className="font-bold leading-[1.587] text-[15px] text-white tracking-[-0.45px] whitespace-nowrap" style={{ fontFamily: "'Source Sans 3', sans-serif" }}>
-                Explore Courses
+                Explore Course
               </span>
             </button>
           </div>

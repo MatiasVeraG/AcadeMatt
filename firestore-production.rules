@@ -16,9 +16,12 @@ service cloud.firestore {
       // Leer: propietario, admins, y tutores (para asignación)
       allow read: if isAuthenticated();
       
-      // Crear: solo durante signup
-      allow create: if isOwner(userId) 
-                    && request.resource.data.email == request.auth.token.email;
+      // Crear: solo el propio usuario al registrarse.
+      // Evita depender del claim email, que puede no estar listo en algunos flujos.
+      allow create: if isOwner(userId)
+                    && !exists(/databases/$(database)/documents/users/$(userId))
+                    && request.resource.data.role == 'student'
+                    && request.resource.data.balance == 0;
       
       // Actualizar: propietario o admin
       allow update: if isOwner(userId) || 

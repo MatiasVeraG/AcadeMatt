@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import Hero from './components/Hero';
@@ -9,44 +9,78 @@ import AdminPanel from './components/AdminPanel';
 import PaymentsPanel from './components/PaymentsPanel';
 import ConversationList from './components/ConversationList';
 
+const PROTECTED_ROUTES = ['/admin', '/tutor', '/marketplace'];
+
+const normalizePath = (path = '/') => {
+  if (!path) return '/';
+  const [pathname] = path.split('?');
+  return pathname === '' ? '/' : pathname;
+};
+
 function App() {
-  const { currentUser, userRole } = useAuth();
-  const [showApp, setShowApp] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
+  const { currentUser, userRole, getRouteByRole } = useAuth();
+  const [routePath, setRoutePath] = useState(() => normalizePath(window.location.pathname));
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState(null);
   // 'conversations' | 'history' | 'payments'
   const [currentView, setCurrentView] = useState('conversations');
 
-  // Sync app visibility with Firebase auth state.
-  // This also fixes the page-reload bug: when Firebase restores the session,
-  // currentUser and userRole will both be set and we auto-navigate to the app.
-  useEffect(() => {
-    if (currentUser && userRole) {
-      setShowApp(true);
-      setShowAuth(false);
-    } else if (!currentUser) {
-      setShowApp(false);
-      setShowAuth(false);
+  const navigateTo = useCallback((path, replace = false) => {
+    const normalized = normalizePath(path);
+    if (normalized === routePath) return;
+
+    if (replace) {
+      window.history.replaceState({}, '', normalized);
+    } else {
+      window.history.pushState({}, '', normalized);
     }
-  }, [currentUser, userRole]);
+    setRoutePath(normalized);
+  }, [routePath]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setRoutePath(normalizePath(window.location.pathname));
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      if (routePath !== '/' && routePath !== '/login') {
+        navigateTo('/login', true);
+      }
+      return;
+    }
+
+    if (!userRole) return;
+
+    const expectedPath = getRouteByRole(userRole);
+    if (routePath === '/' || routePath === '/login') {
+      navigateTo(expectedPath, true);
+      return;
+    }
+
+    if (PROTECTED_ROUTES.includes(routePath) && routePath !== expectedPath) {
+      navigateTo(expectedPath, true);
+    }
+  }, [currentUser, userRole, routePath, getRouteByRole, navigateTo]);
 
   const handleOpenAdminPanel = () => setIsAdminPanelOpen(true);
   const handleCloseAdminPanel = () => setIsAdminPanelOpen(false);
 
   const handleStartConsultation = () => {
-    if (currentUser) {
-      setShowApp(true);
+    if (currentUser && userRole) {
+      navigateTo(getRouteByRole(userRole));
     } else {
-      setShowAuth(true);
+      navigateTo('/login');
     }
   };
 
-  // Don't force showApp here — the useEffect will set it once userRole resolves,
-  // preventing the race condition where the dashboard renders before the role is known.
-  const handleAuthSuccess = () => {
-    setShowAuth(false);
+  const handleAuthSuccess = (redirectPath) => {
+    navigateTo(redirectPath || '/marketplace', true);
   };
 
   const handleSelectConversation = (conversationId) => {
@@ -75,8 +109,20 @@ function App() {
     );
   }
 
-  // Si está autenticado y quiere ver el app
-  if (currentUser && showApp) {
+  if (routePath === '/login') {
+    return <AuthPage onAuthSuccess={handleAuthSuccess} onBack={() => navigateTo('/')} />;
+  }
+
+  if (!currentUser && routePath === '/') {
+    return <Hero onStartConsultation={handleStartConsultation} />;
+  }
+
+  if (!currentUser || !PROTECTED_ROUTES.includes(routePath)) {
+    return null;
+  }
+
+  // Si está autenticado y en una ruta protegida
+  if (currentUser) {
     return (
       <div className="min-h-screen">
         <div className="min-h-screen flex">
@@ -135,13 +181,7 @@ function App() {
     );
   }
 
-  // Si debe mostrar autenticación
-  if (showAuth) {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} onBack={() => setShowAuth(false)} />;
-  }
-
-  // Landing page por defecto
-  return <Hero onStartConsultation={handleStartConsultation} />;
+  return null;
 }
 
 export default App;

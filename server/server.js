@@ -452,7 +452,7 @@ app.post('/api/assign-tutor', async (req, res) => {
         senderId: 'system',
         senderName: 'Sistema',
         senderRole: 'system',
-        text: `¡Excelente! ${selected.tutorName} ha sido asignado como tu tutor. Te responderá pronto.`,
+        text: `Great! ${selected.tutorName} has been assigned as your tutor. He will get back to you shortly.`,
         timestamp: assignedAt,
         read: false,
       });

@@ -58,7 +58,7 @@ const ReviewsPanel = ({ onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Reseñas de estudiantes</h2>
+            <h2 className="text-xl font-bold text-gray-900">Student Reviews</h2>
             {avg && (
               <div className="flex items-center gap-2 mt-1">
                 <StarDisplay rating={Math.round(parseFloat(avg))} />
@@ -81,8 +81,8 @@ const ReviewsPanel = ({ onClose }) => {
           ) : reviews.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <Quote className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="font-medium">Aún no hay reseñas</p>
-              <p className="text-sm mt-1">Sé el primero en dejar tu experiencia</p>
+              <p className="font-medium">No reviews yet</p>
+              <p className="text-sm mt-1">Be the first to share your experience</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -1,19 +1,27 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   createUserWithEmailAndPassword,
+  deleteUser,
+  fetchSignInMethodsForEmail,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   updateProfile,
   sendPasswordResetEmail,
   sendEmailVerification
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, onSnapshot, deleteDoc, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit, addDoc, updateDoc, onSnapshot, deleteDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 
 const AuthContext = createContext();
+
+const getRouteByRole = (role) => {
+  if (role === 'admin') return '/admin';
+  if (role === 'tutor') return '/tutor';
+  return '/marketplace';
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -27,22 +35,31 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const signupInProgressRef = useRef(false);
 
   // Registrar nuevo usuario
   const signup = async (email, password, displayName, role = 'student') => {
+    signupInProgressRef.current = true;
+    setCurrentUser(null);
+    setUserRole(null);
+    let createdUser = null;
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      createdUser = user;
 
       // Actualizar perfil
-      await updateProfile(user, { displayName });
+      if (displayName) {
+        await updateProfile(user, { displayName });
+      }
 
       // Guardar información adicional en Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
-        displayName: displayName,
+        displayName: displayName || null,
         role: role,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
+        balance: 0,
         photoURL: user.photoURL || null,
         available: role === 'tutor' ? false : null, // Solo tutores tienen disponibilidad
         lastActive: new Date().toISOString()
@@ -51,9 +68,50 @@ export const AuthProvider = ({ children }) => {
       await sendEmailVerification(user);
       await signOut(auth);
 
-      return { user, requiresEmailVerification: true };
+      return { user, role, requiresEmailVerification: true };
     } catch (error) {
+      // If Firestore profile creation fails after auth user creation,
+      // remove the auth user to avoid orphan accounts in Authentication.
+      if (createdUser && error.code !== 'auth/email-already-in-use') {
+        try {
+          await deleteUser(createdUser);
+        } catch (_) {
+          // ignore cleanup errors; we still throw original error
+        }
+      }
+
+      if (error.code === 'auth/email-already-in-use') {
+        const methods = await fetchSignInMethodsForEmail(auth, email).catch(() => []);
+
+        if (methods.includes('google.com') && !methods.includes('password')) {
+          const providerError = new Error('auth/email-in-use-with-google');
+          providerError.code = 'auth/email-in-use-with-google';
+          throw providerError;
+        }
+
+        try {
+          const existingCredential = await signInWithEmailAndPassword(auth, email, password);
+          const existingUser = existingCredential.user;
+
+          if (!existingUser.emailVerified) {
+            await sendEmailVerification(existingUser);
+            await signOut(auth);
+            const resendError = new Error('auth/email-already-in-use-unverified');
+            resendError.code = 'auth/email-already-in-use-unverified';
+            throw resendError;
+          }
+
+          await signOut(auth);
+        } catch (signInError) {
+          if (signInError?.code === 'auth/email-already-in-use-unverified') {
+            throw signInError;
+          }
+          // If credentials don't match, fall back to the original Firebase error.
+        }
+      }
       throw error;
+    } finally {
+      signupInProgressRef.current = false;
     }
   };
 
@@ -84,8 +142,22 @@ export const AuthProvider = ({ children }) => {
         throw err;
       }
 
-      return userCredential.user;
+      const role = userDoc.data().role || 'student';
+      setCurrentUser(user);
+      setUserRole(role);
+      return {
+        user: userCredential.user,
+        role,
+        redirectPath: getRouteByRole(role)
+      };
     } catch (error) {
+      if (error.code === 'auth/invalid-credential') {
+        const methods = await fetchSignInMethodsForEmail(auth, email).catch(() => []);
+        const mappedCode = methods.length ? 'auth/wrong-password' : 'auth/user-not-found';
+        const mapped = new Error(mappedCode);
+        mapped.code = mappedCode;
+        throw mapped;
+      }
       throw error;
     }
   };
@@ -95,8 +167,36 @@ export const AuthProvider = ({ children }) => {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-      await signInWithRedirect(auth, provider);
-      return null;
+      const userCredential = await signInWithPopup(auth, provider);
+      const user = userCredential.user;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+      if (!userDoc.exists()) {
+        // Important: do not keep Auth accounts that are not linked to an app profile.
+        // This prevents orphan users in Firebase Authentication after Google login attempts.
+        try {
+          await deleteUser(user);
+        } catch (_) {
+          // If deletion fails, ensure we still sign out and return a controlled error.
+        }
+
+        try {
+          await signOut(auth);
+        } catch (_) {}
+
+        const err = new Error('auth/profile-not-found');
+        err.code = 'auth/profile-not-found';
+        throw err;
+      }
+
+      const role = userDoc.data().role || 'student';
+      setCurrentUser(user);
+      setUserRole(role);
+      return {
+        user,
+        role,
+        redirectPath: getRouteByRole(role)
+      };
     } catch (error) {
       throw error;
     }
@@ -261,22 +361,31 @@ export const AuthProvider = ({ children }) => {
 
   // Asignar tutor por capacidad — delegado al backend (usa Admin SDK)
   const assignTutorByCapacity = async (conversationId) => {
-    const token = await currentUser.getIdToken();
-    const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
-    const response = await fetch(`${apiUrl}/api/assign-tutor`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ conversationId }),
-    });
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || 'Error al asignar tutor');
+    try {
+      const token = await currentUser.getIdToken();
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/assign-tutor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ conversationId }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Error al asignar tutor');
+      }
+
+      const data = await response.json();
+      return data.tutorId || null;
+    } catch (error) {
+      if (error?.name === 'TypeError') {
+        throw new Error('Backend service is offline. Start the local API server on port 3001 and try again.');
+      }
+      throw error;
     }
-    const data = await response.json();
-    return data.tutorId || null;
   };
 
   // Enviar mensaje en una conversación
@@ -504,25 +613,56 @@ export const AuthProvider = ({ children }) => {
   // Escuchar cambios en autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        const role = await fetchUserRole(user.uid);
-        if (!role) {
-          try {
-            sessionStorage.setItem('auth_profile_missing', '1');
-            sessionStorage.setItem('auth_profile_missing_email', user.email || '');
-            sessionStorage.setItem('auth_profile_missing_name', user.displayName || '');
-          } catch (_) {}
+      if (signupInProgressRef.current) {
+        // During signup we intentionally avoid publishing a temporary authenticated
+        // state to the app, preventing a brief redirect to protected routes.
+        setCurrentUser(null);
+        setUserRole(null);
+        setLoading(false);
+        return;
+      }
+
+      if (!user) {
+        setCurrentUser(null);
+        setUserRole(null);
+        setLoading(false);
+        return;
+      }
+
+      const isPasswordProvider = user.providerData.some((provider) => provider.providerId === 'password');
+      if (isPasswordProvider && !user.emailVerified && !signupInProgressRef.current) {
+        try {
           await signOut(auth);
-          setCurrentUser(null);
+        } catch (_) {}
+        setCurrentUser(null);
+        setUserRole(null);
+        setLoading(false);
+        return;
+      }
+
+      const role = await fetchUserRole(user.uid);
+      if (!role) {
+        if (signupInProgressRef.current) {
+          setCurrentUser(user);
           setUserRole(null);
           setLoading(false);
           return;
         }
-        setUserRole(role);
-      } else {
+
+        try {
+          sessionStorage.setItem('auth_profile_missing', '1');
+          sessionStorage.setItem('auth_profile_missing_email', user.email || '');
+          sessionStorage.setItem('auth_profile_missing_name', user.displayName || '');
+        } catch (_) {}
+        await signOut(auth);
+        setCurrentUser(null);
         setUserRole(null);
+        setLoading(false);
+        return;
       }
+
+      setCurrentUser(user);
+      setUserRole(role);
       setLoading(false);
     });
 
@@ -537,6 +677,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     logout,
     resetPassword,
+    getRouteByRole,
     setDefaultTutor,
     getDefaultTutor,
     updateUserRole,
