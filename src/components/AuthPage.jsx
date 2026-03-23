@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Mail, Lock, User, AlertCircle, Loader2, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import bgImage from '../../images/BG.png';
@@ -45,13 +45,13 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
 
       if (code === 'auth/email-not-verified') {
         setNotice('');
-        setError('Te enviamos el correo de confirmacion. Verifica tu cuenta antes de ingresar.');
+        setError('We sent you a confirmation email. Verify your account before signing in.');
         return;
       }
 
       if ((err.code || err.message) === 'auth/profile-not-found') {
         setNotice('');
-        setError('No tienes cuenta activa en AcadeMatt. Regístrate con correo y username.');
+        setError('You do not have an active AcadeMatt account. Sign up with email and username.');
         return;
       }
 
@@ -72,7 +72,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       if (pendingEmail) setEmail(pendingEmail);
       if (pendingName) setDisplayName(pendingName);
       setNotice('');
-      setError('No tienes cuenta activa en AcadeMatt. Regístrate con correo y username.');
+      setError('You do not have an active AcadeMatt account. Sign up with email and username.');
 
       sessionStorage.removeItem('auth_profile_missing');
       sessionStorage.removeItem('auth_profile_missing_email');
@@ -154,8 +154,8 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       'auth/popup-blocked': 'Popup bloqueado por el navegador. Habilita popups para continuar con Google.',
       'auth/unauthorized-domain': 'Este dominio no esta autorizado en Firebase Auth. Agrega academatt.com en Authorized domains.',
       'auth/operation-not-allowed': 'Google Sign-In no esta habilitado en Firebase Authentication.',
-      'auth/email-not-verified': 'Te enviamos el correo de confirmacion. Verifica tu cuenta antes de ingresar.',
-      'auth/profile-not-found': 'No encontramos tu usuario en AcadeMatt. Debes completar Sign Up primero.',
+      'auth/email-not-verified': 'We sent you a confirmation email. Verify your account before signing in.',
+      'auth/profile-not-found': 'We could not find your AcadeMatt user. Complete Sign Up first.',
     };
     return errors[code] || 'Something went wrong, please try again later.';
   };
@@ -222,7 +222,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
             </div>
           )}
 
-          {/* ── Forgot Password Flow ── */}
+          {/* ΓöÇΓöÇ Forgot Password Flow ΓöÇΓöÇ */}
           {isForgotPassword ? (
             resetSent ? (
               <div className="flex flex-col items-center gap-6 text-center">
@@ -404,3 +404,4 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
 };
 
 export default AuthPage;
+

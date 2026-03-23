@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   MessageSquare, Clock, Loader2,
   CheckCircle, XCircle, MinusCircle,
@@ -9,7 +9,7 @@ import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import AvailabilityToggle from './AvailabilityToggle';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function formatRelative(ts) {
   if (!ts) return '';
   const date = ts?.toDate ? ts.toDate() : new Date(ts);
@@ -19,11 +19,11 @@ function formatRelative(ts) {
   return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
-// ── Archive + Close Modal ─────────────────────────────────────────────────────
+// ΓöÇΓöÇ Archive + Close Modal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const CLOSING_OPTIONS = [
-  { status: 'successful',   label: 'Exitosa',      desc: 'Se entregó todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
+  { status: 'successful',   label: 'Exitosa',      desc: 'Se entreg├│ todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
   { status: 'failed',       label: 'Fallida',      desc: 'No se pudo entregar lo acordado',    Icon: XCircle,      color: 'text-red-600',   hover: 'hover:bg-red-50 border-red-200'     },
-  { status: 'not_realized', label: 'No realizada', desc: 'Sin acuerdo — sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
+  { status: 'not_realized', label: 'Not completed', desc: 'Sin acuerdo ΓÇö sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
 ];
 
 function ArchiveModal({ conversationId, onCancel, onArchived }) {
@@ -45,9 +45,9 @@ function ArchiveModal({ conversationId, onCancel, onArchived }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-gray-800 mb-1">Archivar consulta</h3>
+        <h3 className="text-lg font-bold text-gray-800 mb-1">Archive consultation</h3>
         <p className="text-sm text-gray-500 mb-4">
-          Esto cierra y archiva la consulta. El alumno podrá dejar una reseña. ¿Cómo resultó?
+          This closes and archives the consultation. The student will be able to leave a review. How did it go?
         </p>
         <div className="space-y-2">
           {CLOSING_OPTIONS.map(({ status, label, desc, Icon, color, hover }) => (
@@ -78,7 +78,7 @@ function ArchiveModal({ conversationId, onCancel, onArchived }) {
   );
 }
 
-// ── Conversation Card ─────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Conversation Card ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
   const statusColor =
     conv.status === 'assigned'  ? 'bg-green-100 text-green-700' :
@@ -111,7 +111,7 @@ function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor}`}>{statusLabel}</span>
             {conv.closingStatus === 'successful'   && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Exitosa</span>}
             {conv.closingStatus === 'failed'        && <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Fallida</span>}
-            {conv.closingStatus === 'not_realized'  && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">No realizada</span>}
+            {conv.closingStatus === 'not_realized'  && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Not completed</span>}
           </div>
         </div>
       </div>
@@ -124,7 +124,7 @@ function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
             className="text-xs flex items-center gap-1 px-3 py-1.5 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
           >
             <MoveRight className="w-3.5 h-3.5" />
-            En Proceso
+            In Progress
           </button>
         )}
         {onArchiveRequest && (
@@ -133,7 +133,7 @@ function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
             className="text-xs flex items-center gap-1 px-3 py-1.5 border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
           >
             <Archive className="w-3.5 h-3.5" />
-            Archivar
+            Archive
           </button>
         )}
         <button
@@ -147,7 +147,7 @@ function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
   );
 }
 
-// ── All Payments Panel (admin only) ───────────────────────────────────────────
+// ΓöÇΓöÇ All Payments Panel (admin only) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function AllPaymentsPanel() {
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -195,7 +195,7 @@ function AllPaymentsPanel() {
       {payments.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
           <DollarSign className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">Sin pagos registrados</p>
+          <p className="text-gray-500 font-medium">No payments recorded</p>
         </div>
       ) : (
         payments.map(p => (
@@ -206,7 +206,7 @@ function AllPaymentsPanel() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-800 truncate">{p.subject || 'Consulta'}</p>
               <p className="text-xs text-gray-500">
-                {p.studentName || 'Estudiante'} → {p.tutorName || 'Tutor'}
+                {p.studentName || 'Estudiante'} ΓåÆ {p.tutorName || 'Tutor'}
               </p>
               <p className="text-xs text-gray-400">{formatDate(p.paidAt)}</p>
             </div>
@@ -221,20 +221,20 @@ function AllPaymentsPanel() {
   );
 }
 
-// ── Tab configurations ────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Tab configurations ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const TUTOR_TABS = [
   { id: 'consultas',  label: 'Consultas',  dotColor: 'bg-blue-500'   },
-  { id: 'inprogress', label: 'En Proceso', dotColor: 'bg-orange-500' },
+  { id: 'inprogress', label: 'In Progress', dotColor: 'bg-orange-500' },
 ];
 
 const ADMIN_TABS = [
   { id: 'consultas',  label: 'Consultas',  dotColor: 'bg-blue-500'   },
   { id: 'pagos',      label: 'Pagos',      dotColor: 'bg-green-500'  },
-  { id: 'inprogress', label: 'En Proceso', dotColor: 'bg-orange-500' },
-  { id: 'historial',  label: 'Historial',  dotColor: 'bg-gray-400'   },
+  { id: 'inprogress', label: 'In Progress', dotColor: 'bg-orange-500' },
+  { id: 'historial',  label: 'History',  dotColor: 'bg-gray-400'   },
 ];
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Main Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' }) => {
   const { currentUser, userRole, moveToInProgress } = useAuth();
   const [conversations, setConversations] = useState([]);
@@ -270,20 +270,20 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
     try {
       await moveToInProgress(conversationId);
     } catch (e) {
-      console.error('Error al mover a En Proceso:', e);
+      console.error('Error moving to In Progress:', e);
     }
   };
 
   if (userRole !== 'tutor' && userRole !== 'admin') {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Acceso solo para tutores</p>
+        <p className="text-gray-500">Tutors only access</p>
       </div>
     );
   }
 
-  // For tutors, the sidebar "Historial" view shows archived convs directly
-  const isTutorHistorial = userRole === 'tutor' && currentView === 'history';
+  // For tutors, the sidebar "History" view shows archived convs directly
+  const isTutorHistory = userRole === 'tutor' && currentView === 'history';
 
   const tabs = userRole === 'admin' ? ADMIN_TABS : TUTOR_TABS;
 
@@ -295,14 +295,14 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
 
   const tabConvs = grouped[activeTab] ?? [];
 
-  // Tutor historial view (activated via sidebar "Historial")
-  if (isTutorHistorial) {
+  // Tutor historial view (activated via sidebar "History")
+  if (isTutorHistory) {
     const historial = grouped.historial;
     return (
       <div className="flex flex-col h-full bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-800">Historial</h2>
-          <p className="text-sm text-gray-500">{historial.length} consulta{historial.length !== 1 ? 's' : ''} archivadas</p>
+          <h2 className="text-xl font-bold text-gray-800">History</h2>
+          <p className="text-sm text-gray-500">{historial.length} consultation{historial.length !== 1 ? 's' : ''} archived</p>
         </div>
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -314,7 +314,7 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
               {historial.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-300">
                   <MessageSquare className="w-10 h-10 mb-2" />
-                  <p className="text-sm">Sin consultas archivadas</p>
+                  <p className="text-sm">No archived consultations</p>
                 </div>
               ) : (
                 historial.map(conv => (
@@ -340,7 +340,7 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Mis Consultas</h2>
+            <h2 className="text-xl font-bold text-gray-800">My Consultations</h2>
             <p className="text-sm text-gray-500">
               {conversations.length} consulta{conversations.length !== 1 ? 's' : ''} en total
             </p>
@@ -389,7 +389,7 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
             {tabConvs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-300">
                 <MessageSquare className="w-10 h-10 mb-2" />
-                <p className="text-sm">Sin consultas en esta sección</p>
+                <p className="text-sm">No consultations en esta secci├│n</p>
               </div>
             ) : (
               tabConvs.map(conv => (
@@ -419,4 +419,5 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
 };
 
 export default TutorDashboard;
+
 

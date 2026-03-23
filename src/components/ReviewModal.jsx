@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Star, Send, Loader2, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,7 +25,7 @@ const ReviewModal = ({ conversation, onClose }) => {
       });
       setDone(true);
     } catch (err) {
-      console.error('Error enviando reseña:', err);
+      console.error('Error submitting review:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -36,25 +36,25 @@ const ReviewModal = ({ conversation, onClose }) => {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         {done ? (
           <div className="text-center py-6 space-y-3">
-            <div className="text-4xl">🎉</div>
-            <h3 className="text-lg font-bold text-gray-800">¡Gracias por tu reseña!</h3>
-            <p className="text-sm text-gray-500">Tu opinión ayuda a otros estudiantes a encontrar los mejores tutores.</p>
+            <div className="text-4xl">Thanks!</div>
+            <h3 className="text-lg font-bold text-gray-800">Thanks for your review!</h3>
+            <p className="text-sm text-gray-500">Your feedback helps other students find the best tutors.</p>
             <button
               onClick={onClose}
               className="mt-4 px-6 py-2.5 bg-academic-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
-              Cerrar
+              Close
             </button>
           </div>
         ) : (
           <>
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">¿Cómo fue tu experiencia?</h3>
+                <h3 className="text-lg font-bold text-gray-800">How was your experience?</h3>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  Consulta: <span className="font-medium text-gray-700">{conversation.subject}</span>
+                  Consultation: <span className="font-medium text-gray-700">{conversation.subject}</span>
                   {conversation.tutorName && (
-                    <> · con <span className="font-medium text-gray-700">{conversation.tutorName}</span></>
+                    <> • with <span className="font-medium text-gray-700">{conversation.tutorName}</span></>
                   )}
                 </p>
               </div>
@@ -66,7 +66,7 @@ const ReviewModal = ({ conversation, onClose }) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Star rating */}
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Calificación</p>
+                <p className="text-sm font-medium text-gray-700 mb-2">Rating</p>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map(star => (
                     <button
@@ -89,7 +89,7 @@ const ReviewModal = ({ conversation, onClose }) => {
                 </div>
                 {rating > 0 && (
                   <p className="text-xs text-gray-400 mt-1">
-                    {['', 'Muy malo', 'Malo', 'Regular', 'Bueno', 'Excelente'][rating]}
+                    {['', 'Very bad', 'Bad', 'Average', 'Good', 'Excellent'][rating]}
                   </p>
                 )}
               </div>
@@ -97,14 +97,14 @@ const ReviewModal = ({ conversation, onClose }) => {
               {/* Comment */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1 block">
-                  Comentario <span className="text-gray-400 font-normal">(opcional)</span>
+                  Comment <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
                 <textarea
                   value={text}
                   onChange={e => setText(e.target.value)}
                   maxLength={600}
                   rows={3}
-                  placeholder="Cuéntanos cómo fue la sesión..."
+                  placeholder="Tell us how the session went..."
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-academic-blue focus:border-transparent resize-none"
                 />
                 <p className="text-xs text-gray-400 text-right">{text.length}/600</p>
@@ -116,7 +116,7 @@ const ReviewModal = ({ conversation, onClose }) => {
                   onClick={onClose}
                   className="flex-1 py-2.5 border border-gray-200 rounded-lg text-gray-600 font-medium hover:bg-gray-50 transition-colors text-sm"
                 >
-                  Ahora no
+                  Not now
                 </button>
                 <button
                   type="submit"
@@ -124,7 +124,7 @@ const ReviewModal = ({ conversation, onClose }) => {
                   className="flex-1 py-2.5 bg-academic-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Enviar reseña
+                  Submit review
                 </button>
               </div>
             </form>
@@ -136,3 +136,4 @@ const ReviewModal = ({ conversation, onClose }) => {
 };
 
 export default ReviewModal;
+

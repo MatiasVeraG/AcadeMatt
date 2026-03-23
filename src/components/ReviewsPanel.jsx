@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Star, X, Loader2, Quote } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -30,7 +30,7 @@ const ReviewsPanel = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // NOTE: no compound orderBy+where — just fetch latest 50 reviews, sort client-side
+    // NOTE: no compound orderBy+where ΓÇö just fetch latest 50 reviews, sort client-side
     const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(50));
     const unsub = onSnapshot(q,
       snap => {
@@ -38,7 +38,7 @@ const ReviewsPanel = ({ onClose }) => {
         setIsLoading(false);
       },
       err => {
-        console.error('Error cargando reseñas:', err);
+        console.error('Error loading reviews:', err);
         setIsLoading(false);
       }
     );
@@ -63,7 +63,7 @@ const ReviewsPanel = ({ onClose }) => {
               <div className="flex items-center gap-2 mt-1">
                 <StarDisplay rating={Math.round(parseFloat(avg))} />
                 <span className="text-sm font-semibold text-gray-700">{avg}</span>
-                <span className="text-sm text-gray-400">· {reviews.length} reseña{reviews.length !== 1 ? 's' : ''}</span>
+                <span className="text-sm text-gray-400">• {reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
               </div>
             )}
           </div>
@@ -96,8 +96,8 @@ const ReviewsPanel = ({ onClose }) => {
                       <div>
                         <p className="text-sm font-semibold text-gray-800">{r.studentName}</p>
                         <p className="text-xs text-gray-400">
-                          {r.subject && <span className="mr-1">{r.subject} ·</span>}
-                          {r.tutorName && <span>con {r.tutorName} · </span>}
+                          {r.subject && <span className="mr-1">{r.subject} ┬╖</span>}
+                          {r.tutorName && <span>con {r.tutorName} ┬╖ </span>}
                           {timeAgo(r.createdAt)}
                         </p>
                       </div>
@@ -118,3 +118,4 @@ const ReviewsPanel = ({ onClose }) => {
 };
 
 export default ReviewsPanel;
+

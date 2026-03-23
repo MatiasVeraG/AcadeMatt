@@ -7,7 +7,7 @@ import { CheckCircle, DollarSign, TrendingUp } from 'lucide-react';
  * Props:
  *   offer       — Firestore offer document { tutorName, amount, tutorEarnings,
  *                  description, subject, checkoutUrl, status }
- *   onAccept(checkoutUrl) — called when the student clicks "Aceptar y Pagar"
+ *   onAccept(checkoutUrl) — called when the student clicks "Accept and Pay"
  */
 const ProposalCard = ({ offer, onAccept }) => {
   if (!offer) return null;
@@ -24,7 +24,7 @@ const ProposalCard = ({ offer, onAccept }) => {
         </div>
         <div>
           <div className="font-semibold text-gray-800">{tutorName || 'Tutor'}</div>
-          <div className="text-xs text-gray-500">Tutor académico</div>
+          <div className="text-xs text-gray-500">Academic Tutor</div>
         </div>
       </div>
 
@@ -32,27 +32,27 @@ const ProposalCard = ({ offer, onAccept }) => {
       <div className="bg-white rounded-xl p-5 mb-4 shadow-sm">
         <h3 className="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
           <CheckCircle className="w-5 h-5 text-green-500" />
-          Propuesta de Servicio
+          Service Proposal
         </h3>
 
         <div className="space-y-3">
           {subject && (
             <div>
-              <div className="text-sm font-semibold text-gray-600 mb-1">Servicio:</div>
+              <div className="text-sm font-semibold text-gray-600 mb-1">Service:</div>
               <div className="font-bold text-academic-blue">{subject}</div>
             </div>
           )}
 
           {description && (
             <div>
-              <div className="text-sm font-semibold text-gray-600 mb-1">Detalles:</div>
+              <div className="text-sm font-semibold text-gray-600 mb-1">Details:</div>
               <div className="text-sm text-gray-700 leading-relaxed">{description}</div>
             </div>
           )}
 
           {/* Price */}
           <div className="pt-3 border-t border-gray-200 text-right">
-            <div className="text-sm text-gray-500 mb-1">Precio total</div>
+            <div className="text-sm text-gray-500 mb-1">Total Price</div>
             <div className="text-3xl font-bold text-academic-blue flex items-center justify-end gap-1">
               <DollarSign className="w-7 h-7" />
               {amount?.toFixed(2)}
@@ -68,11 +68,11 @@ const ProposalCard = ({ offer, onAccept }) => {
         className="w-full bg-gradient-to-r from-academic-blue to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all flex items-center justify-center gap-2"
       >
         <CheckCircle className="w-6 h-6" />
-        Aceptar y Pagar
+        Accept and Pay
       </button>
 
       <p className="text-xs text-center text-gray-500 mt-3">
-        ✓ Pago seguro &nbsp;•&nbsp; ✓ Garantía de satisfacción
+        ✓ Secure payment &nbsp;•&nbsp; ✓ Satisfaction guarantee
       </p>
     </div>
   );

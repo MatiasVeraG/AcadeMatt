@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { BookOpen, Loader2, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -8,12 +8,12 @@ const StartConsultation = ({ onConsultationCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
 
   const suggestedTopics = [
-    'Cálculo Diferencial',
-    'Álgebra Lineal',
-    'Física I',
-    'Química Orgánica',
-    'Programación en Python',
-    'Estadística'
+    'C├ílculo Diferencial',
+    '├ülgebra Lineal',
+    'F├¡sica I',
+    'Qu├¡mica Org├ínica',
+    'Programaci├│n en Python',
+    'Estad├¡stica'
   ];
 
   const handleSubmit = async (e) => {
@@ -26,7 +26,7 @@ const StartConsultation = ({ onConsultationCreated }) => {
       onConsultationCreated(conversationId);
     } catch (error) {
       console.error('Error creando consulta:', error);
-      alert('Error al crear la consulta. Intenta nuevamente.');
+      alert('Error creating the consultation. Please try again.');
     } finally {
       setIsCreating(false);
     }
@@ -45,10 +45,10 @@ const StartConsultation = ({ onConsultationCreated }) => {
             <MessageSquare className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">
-            Iniciar Nueva Consulta
+            Start New Consultation
           </h2>
           <p className="text-gray-600">
-            Describe tu necesidad académica y te conectaremos con el mejor tutor disponible
+            Describe tu necesidad acad├⌐mica y te conectaremos con el mejor tutor disponible
           </p>
         </div>
 
@@ -56,14 +56,14 @@ const StartConsultation = ({ onConsultationCreated }) => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
-              ¿En qué materia necesitas ayuda?
+              Which subject do you need help with?
             </label>
             <input
               id="subject"
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="Ej: Cálculo Diferencial, Física I, etc."
+              placeholder="E.g. Differential Calculus, Physics I, etc."
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue"
               disabled={isCreating}
             />
@@ -72,7 +72,7 @@ const StartConsultation = ({ onConsultationCreated }) => {
           {/* Suggested Topics */}
           <div>
             <p className="text-sm font-medium text-gray-700 mb-3">
-              O selecciona un tema común:
+              O selecciona un tema com├║n:
             </p>
             <div className="grid grid-cols-2 gap-3">
               {suggestedTopics.map((topic) => (
@@ -103,12 +103,12 @@ const StartConsultation = ({ onConsultationCreated }) => {
             {isCreating ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Buscando tutor disponible...
+                Looking for an available tutor...
               </>
             ) : (
               <>
                 <MessageSquare className="w-5 h-5" />
-                Iniciar Consulta
+                Start Consultation
               </>
             )}
           </button>
@@ -117,8 +117,8 @@ const StartConsultation = ({ onConsultationCreated }) => {
         {/* Info Box */}
         <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
           <p className="text-sm text-gray-700">
-            <span className="font-semibold">🤖 Sistema Inteligente:</span> Usamos asignación por capacidad para conectarte 
-            con el tutor más disponible, garantizando respuestas rápidas.
+            <span className="font-semibold">≡ƒñû Smart System:</span> Usamos asignaci├│n por capacidad para conectarte 
+            con el tutor m├ís disponible, garantizando respuestas r├ípidas.
           </p>
         </div>
       </div>
@@ -127,3 +127,4 @@ const StartConsultation = ({ onConsultationCreated }) => {
 };
 
 export default StartConsultation;
+

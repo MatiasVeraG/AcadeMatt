@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Power, Loader2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -87,8 +87,8 @@ const AvailabilityToggle = () => {
       <div className="mt-3 pt-3 border-t border-gray-100">
         <p className="text-xs text-gray-500">
           {isAvailable 
-            ? '✅ Recibirás nuevas consultas automáticamente según tu capacidad'
-            : '⚠️ No recibirás nuevas consultas mientras estés no disponible'
+            ? 'You will receive new consultations automatically based on your capacity'
+            : 'You will not receive new consultations while unavailable'
           }
         </p>
       </div>
@@ -97,3 +97,4 @@ const AvailabilityToggle = () => {
 };
 
 export default AvailabilityToggle;
+

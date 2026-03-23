@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   MessageSquare, Clock, Timer, Loader2,
   CheckCircle, XCircle, MinusCircle,
@@ -9,14 +9,14 @@ import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import AvailabilityToggle from './AvailabilityToggle';
 
-// ── Subject → color mapping ──────────────────────────────────────────────────
+// ΓöÇΓöÇ Subject ΓåÆ color mapping ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const SUBJECT_COLORS = [
-  { keys: ['física', 'fisic', 'mecánic', 'termod', 'óptic'],                           bg: 'bg-red-100',    text: 'text-red-700',    border: 'border-red-400',    dot: 'bg-red-500'    },
-  { keys: ['cálculo', 'calculo', 'derivad', 'integral', 'límite', 'limite'],           bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-400',   dot: 'bg-blue-500'   },
-  { keys: ['álgebra', 'algebra', 'matri', 'vector', 'linear'],                         bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400', dot: 'bg-purple-500' },
-  { keys: ['química', 'quimic', 'orgáni', 'inorgáni'],                                 bg: 'bg-green-100',  text: 'text-green-700',  border: 'border-green-400',  dot: 'bg-green-500'  },
-  { keys: ['estadíst', 'estadist', 'probab', 'distribuc'],                             bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-400', dot: 'bg-yellow-500' },
-  { keys: ['programac', 'código', 'codigo', 'python', 'java', 'js', 'software'],       bg: 'bg-cyan-100',   text: 'text-cyan-700',   border: 'border-cyan-400',   dot: 'bg-cyan-500'   },
+  { keys: ['f├¡sica', 'fisic', 'mec├ínic', 'termod', '├│ptic'],                           bg: 'bg-red-100',    text: 'text-red-700',    border: 'border-red-400',    dot: 'bg-red-500'    },
+  { keys: ['c├ílculo', 'calculo', 'derivad', 'integral', 'l├¡mite', 'limite'],           bg: 'bg-blue-100',   text: 'text-blue-700',   border: 'border-blue-400',   dot: 'bg-blue-500'   },
+  { keys: ['├ílgebra', 'algebra', 'matri', 'vector', 'linear'],                         bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400', dot: 'bg-purple-500' },
+  { keys: ['qu├¡mica', 'quimic', 'org├íni', 'inorg├íni'],                                 bg: 'bg-green-100',  text: 'text-green-700',  border: 'border-green-400',  dot: 'bg-green-500'  },
+  { keys: ['estad├¡st', 'estadist', 'probab', 'distribuc'],                             bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-400', dot: 'bg-yellow-500' },
+  { keys: ['programac', 'c├│digo', 'codigo', 'python', 'java', 'js', 'software'],       bg: 'bg-cyan-100',   text: 'text-cyan-700',   border: 'border-cyan-400',   dot: 'bg-cyan-500'   },
   { keys: ['geometr', 'trigono'],                                                       bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-400', dot: 'bg-orange-500' },
 ];
 const DEFAULT_COLOR = { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-300', dot: 'bg-gray-400' };
@@ -36,7 +36,7 @@ function formatRelative(ts) {
   return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
-// ── Urgency Timer ─────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Urgency Timer ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function UrgencyTimer({ createdAt, hasOffer }) {
   const [minutesElapsed, setMinutesElapsed] = useState(0);
 
@@ -67,11 +67,11 @@ function UrgencyTimer({ createdAt, hasOffer }) {
   );
 }
 
-// ── Closing Status Modal ──────────────────────────────────────────────────────
+// ΓöÇΓöÇ Closing Status Modal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const CLOSING_OPTIONS = [
-  { status: 'successful',   label: 'Exitosa',      desc: 'Se entregó todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
+  { status: 'successful',   label: 'Exitosa',      desc: 'Se entreg├│ todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
   { status: 'failed',       label: 'Fallida',      desc: 'No se pudo entregar lo acordado',    Icon: XCircle,      color: 'text-red-600',   hover: 'hover:bg-red-50 border-red-200'     },
-  { status: 'not_realized', label: 'No realizada', desc: 'Sin acuerdo — sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
+  { status: 'not_realized', label: 'Not completed', desc: 'Sin acuerdo ΓÇö sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
 ];
 
 function ClosingModal({ conversationId, onCancel, onClosed }) {
@@ -92,8 +92,8 @@ function ClosingModal({ conversationId, onCancel, onClosed }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-gray-800 mb-1">Finalizar consulta</h3>
-        <p className="text-sm text-gray-500 mb-4">¿Cómo resultó esta consulta?</p>
+        <h3 className="text-lg font-bold text-gray-800 mb-1">Finish consultation</h3>
+        <p className="text-sm text-gray-500 mb-4">┬┐C├│mo result├│ esta consulta?</p>
         <div className="space-y-2">
           {CLOSING_OPTIONS.map(({ status, label, desc, Icon, color, hover }) => (
             <button
@@ -123,7 +123,7 @@ function ClosingModal({ conversationId, onCancel, onClosed }) {
   );
 }
 
-// ── Kanban Card ───────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Kanban Card ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function KanbanCard({ conversation, onOpen, onCloseRequest, onArchive }) {
   const color = getSubjectColor(conversation.subject);
   const hasOffer = conversation.offerStatus === 'paid';
@@ -131,7 +131,7 @@ function KanbanCard({ conversation, onOpen, onCloseRequest, onArchive }) {
   const closingBadge =
     conversation.closingStatus === 'successful'   ? { label: 'Exitosa',      cls: 'bg-green-100 text-green-700' } :
     conversation.closingStatus === 'failed'        ? { label: 'Fallida',      cls: 'bg-red-100 text-red-700'     } :
-    conversation.closingStatus === 'not_realized'  ? { label: 'No realizada', cls: 'bg-gray-100 text-gray-600'   } :
+    conversation.closingStatus === 'not_realized'  ? { label: 'Not completed', cls: 'bg-gray-100 text-gray-600'   } :
     null;
 
   return (
@@ -188,7 +188,7 @@ function KanbanCard({ conversation, onOpen, onCloseRequest, onArchive }) {
           {onArchive && (
             <button
               onClick={e => { e.stopPropagation(); onArchive(conversation.id); }}
-              title="Archivar"
+              title="Archive"
               className="text-xs p-1.5 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
             >
               <Archive className="w-3.5 h-3.5" />
@@ -206,7 +206,7 @@ function KanbanCard({ conversation, onOpen, onCloseRequest, onArchive }) {
   );
 }
 
-// ── Kanban Column ─────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Kanban Column ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function KanbanColumn({ title, dotColor, cards, onOpen, onCloseRequest }) {
   return (
     <div className="flex flex-col bg-gray-50 rounded-xl border border-gray-200 overflow-hidden w-80 max-h-full flex-shrink-0">
@@ -226,7 +226,7 @@ function KanbanColumn({ title, dotColor, cards, onOpen, onCloseRequest }) {
         {cards.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-gray-300">
             <MessageSquare className="w-8 h-8 mb-2" />
-            <p className="text-xs">Sin consultas</p>
+            <p className="text-xs">No consultations</p>
           </div>
         ) : (
           cards.map(c => (
@@ -243,7 +243,7 @@ function KanbanColumn({ title, dotColor, cards, onOpen, onCloseRequest }) {
   );
 }
 
-// ── Filter Bar ────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇ Filter Bar ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function FilterBar({ conversations, filters, setFilters }) {
   const subjects = [...new Set(conversations.map(c => c.subject).filter(Boolean))].sort();
 
@@ -280,7 +280,7 @@ function FilterBar({ conversations, filters, setFilters }) {
         onChange={e => setFilters(f => ({ ...f, payment: e.target.value }))}
         className="border-0 bg-transparent text-gray-600 cursor-pointer focus:ring-0 focus:outline-none text-sm"
       >
-        <option value="">Todos los pagos</option>
+        <option value="">All payments</option>
         <option value="unpaid">Sin pagar</option>
         <option value="paid">Pagado</option>
       </select>
@@ -313,10 +313,10 @@ function applyFilters(conversations, filters) {
   });
 }
 
-// ── Main KanbanDashboard ──────────────────────────────────────────────────────
+// ΓöÇΓöÇ Main KanbanDashboard ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const KANBAN_TABS = [
-  { id: 'pending',  title: 'Pendientes',    dotColor: 'bg-yellow-400' },
-  { id: 'active',   title: 'En Proceso',    dotColor: 'bg-blue-500'   },
+  { id: 'pending',  title: 'Pending',    dotColor: 'bg-yellow-400' },
+  { id: 'active',   title: 'In Progress',    dotColor: 'bg-blue-500'   },
   { id: 'finished', title: 'Finalizados',   dotColor: 'bg-green-500'  },
 ];
 
@@ -333,7 +333,7 @@ const KanbanDashboard = ({ onSelectConversation }) => {
     if (!currentUser || (userRole !== 'tutor' && userRole !== 'admin')) return;
     setIsLoading(true);
 
-    // NOTE: no orderBy + where compound — sorts client-side to avoid composite index requirement.
+    // NOTE: no orderBy + where compound ΓÇö sorts client-side to avoid composite index requirement.
     const q = userRole === 'admin'
       ? query(collection(db, 'conversations'))
       : query(
@@ -375,7 +375,7 @@ const KanbanDashboard = ({ onSelectConversation }) => {
   if (userRole !== 'tutor' && userRole !== 'admin') {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Acceso solo para tutores</p>
+        <p className="text-gray-500">Tutors only access</p>
       </div>
     );
   }
@@ -396,7 +396,7 @@ const KanbanDashboard = ({ onSelectConversation }) => {
       <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm flex-shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-3">
           <div>
-            <h2 className="text-xl font-bold text-gray-800">Mis Consultas</h2>
+            <h2 className="text-xl font-bold text-gray-800">My Consultations</h2>
             <p className="text-sm text-gray-500">
               {conversations.length} consulta{conversations.length !== 1 ? 's' : ''} en total
             </p>
@@ -444,7 +444,7 @@ const KanbanDashboard = ({ onSelectConversation }) => {
             {tabCards.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-300">
                 <MessageSquare className="w-10 h-10 mb-2" />
-                <p className="text-sm">Sin consultas en esta categoría</p>
+                <p className="text-sm">No consultations en esta categor├¡a</p>
               </div>
             ) : (
               tabCards.map(c => (
@@ -474,3 +474,4 @@ const KanbanDashboard = ({ onSelectConversation }) => {
 };
 
 export default KanbanDashboard;
+

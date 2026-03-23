@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Shield, Users, RefreshCw, AlertCircle, CheckCircle, X, Star, MessageSquare, UserCheck } from 'lucide-react';
 
@@ -44,7 +44,7 @@ const AdminPanel = ({ onClose }) => {
       list.forEach(c => { defaults[c.id] = c.tutorId || ''; });
       setConvTutorSelections(prev => ({ ...defaults, ...prev }));
     } catch (err) {
-      setError('Error al cargar conversaciones: ' + err.message);
+      setError('Error loading conversations: ' + err.message);
     } finally {
       setLoadingConvs(false);
     }
@@ -66,7 +66,7 @@ const AdminPanel = ({ onClose }) => {
       setSuccess(`Tutor asignado: ${result.tutorName}`);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Error al asignar tutor: ' + err.message);
+      setError('Error assigning tutor: ' + err.message);
     } finally {
       setAssigningConv(null);
     }
@@ -154,9 +154,9 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const getRoleIcon = (role) => {
-    if (role === 'admin') return '👑';
-    if (role === 'tutor') return '👨‍🏫';
-    return '🎓';
+    if (role === 'admin') return '≡ƒææ';
+    if (role === 'tutor') return '≡ƒæ¿ΓÇì≡ƒÅ½';
+    return '≡ƒÄô';
   };
 
   // Verificar que el usuario actual es admin
@@ -211,7 +211,7 @@ const AdminPanel = ({ onClose }) => {
             }`}
           >
             <Users className="w-4 h-4" />
-            Usuarios
+            Users
           </button>
           <button
             onClick={() => setTab('conversations')}
@@ -222,7 +222,7 @@ const AdminPanel = ({ onClose }) => {
             }`}
           >
             <MessageSquare className="w-4 h-4" />
-            Conversaciones
+            Conversations
           </button>
         </div>
 
@@ -243,7 +243,7 @@ const AdminPanel = ({ onClose }) => {
             </div>
           )}
 
-          {/* ── USERS TAB ── */}
+          {/* ΓöÇΓöÇ USERS TAB ΓöÇΓöÇ */}
           {tab === 'users' && <>
 
           {/* Default Tutor Selector */}
@@ -261,10 +261,10 @@ const AdminPanel = ({ onClose }) => {
                 onChange={(e) => setSelectedDefault(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
               >
-                <option value="">— No backup tutor —</option>
+                <option value="">ΓÇö No backup tutor ΓÇö</option>
                 {users.filter(u => u.role === 'tutor' || u.role === 'admin').map(u => (
                   <option key={u.id} value={u.id}>
-                    {u.displayName || u.email}{u.id === defaultTutorId ? ' ⭐ (actual)' : ''}
+                    {u.displayName || u.email}{u.id === defaultTutorId ? ' Γ¡É (actual)' : ''}
                   </option>
                 ))}
               </select>
@@ -274,7 +274,7 @@ const AdminPanel = ({ onClose }) => {
                 className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 {savingDefault ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Star className="w-4 h-4" />}
-                Guardar
+                Save
               </button>
             </div>
           </div>
@@ -351,9 +351,9 @@ const AdminPanel = ({ onClose }) => {
                         disabled={updating === user.id || user.id === currentUser.uid}
                         className={`px-3 py-2 border rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed ${getRoleBadge(user.role).color}`}
                       >
-                        <option value="student">🎓 Student</option>
-                        <option value="tutor">👨‍🏫 Tutor</option>
-                        <option value="admin">👑 Admin</option>
+                        <option value="student">≡ƒÄô Student</option>
+                        <option value="tutor">≡ƒæ¿ΓÇì≡ƒÅ½ Tutor</option>
+                        <option value="admin">≡ƒææ Admin</option>
                       </select>
                       {updating === user.id && (
                         <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
@@ -366,7 +366,7 @@ const AdminPanel = ({ onClose }) => {
           )}
           </> /* end users tab */}
 
-          {/* ── CONVERSATIONS TAB ── */}
+          {/* ΓöÇΓöÇ CONVERSATIONS TAB ΓöÇΓöÇ */}
           {tab === 'conversations' && (
             <>
               {/* Filters */}
@@ -374,7 +374,7 @@ const AdminPanel = ({ onClose }) => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-gray-600">
                     <MessageSquare className="w-5 h-5" />
-                    <span className="font-medium">{conversations.length} conversaciones</span>
+                    <span className="font-medium">{conversations.length} conversations</span>
                   </div>
                   <button
                     onClick={loadConversations}
@@ -382,13 +382,13 @@ const AdminPanel = ({ onClose }) => {
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className={`w-4 h-4 ${loadingConvs ? 'animate-spin' : ''}`} />
-                    Actualizar
+                    Refresh
                   </button>
                 </div>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="Buscar por asignatura o alumno..."
+                    placeholder="Search by subject or student..."
                     value={convSearch}
                     onChange={e => setConvSearch(e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
@@ -398,10 +398,10 @@ const AdminPanel = ({ onClose }) => {
                     onChange={e => setConvFilter(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
                   >
-                    <option value="all">Todos</option>
-                    <option value="pending">Pendientes</option>
-                    <option value="assigned">Asignados</option>
-                    <option value="completed">Completados</option>
+                    <option value="all">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="completed">Completed</option>
                   </select>
                 </div>
               </div>
@@ -409,12 +409,12 @@ const AdminPanel = ({ onClose }) => {
               {loadingConvs ? (
                 <div className="text-center py-12">
                   <RefreshCw className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500">Cargando conversaciones...</p>
+                  <p className="text-gray-500">Loading conversations...</p>
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="text-center py-12">
                   <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No hay conversaciones</p>
+                  <p className="text-gray-500">No conversations</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -437,10 +437,10 @@ const AdminPanel = ({ onClose }) => {
                             {/* Conv info */}
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-gray-800 truncate">{conv.subject || 'Sin asignatura'}</div>
-                                <div className="text-sm text-gray-500">Alumno: {conv.studentName || conv.studentId}</div>
+                                <div className="font-semibold text-gray-800 truncate">{conv.subject || 'No subject'}</div>
+                                <div className="text-sm text-gray-500">Student: {conv.studentName || conv.studentId}</div>
                                 {conv.tutorName && (
-                                  <div className="text-sm text-gray-500">Tutor actual: <span className="font-medium text-blue-700">{conv.tutorName}</span></div>
+                                  <div className="text-sm text-gray-500">Current tutor: <span className="font-medium text-blue-700">{conv.tutorName}</span></div>
                                 )}
                                 <div className="text-xs text-gray-400">{new Date(conv.createdAt).toLocaleString('es-ES')}</div>
                               </div>
@@ -457,7 +457,7 @@ const AdminPanel = ({ onClose }) => {
                                 disabled={assigningConv === conv.id}
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50"
                               >
-                                <option value="">— Sin tutor —</option>
+                                <option value="">- No tutor -</option>
                                 {tutors.map(t => (
                                   <option key={t.id} value={t.id}>{t.displayName || t.email}</option>
                                 ))}
@@ -470,7 +470,7 @@ const AdminPanel = ({ onClose }) => {
                                 {assigningConv === conv.id
                                   ? <RefreshCw className="w-4 h-4 animate-spin" />
                                   : <UserCheck className="w-4 h-4" />}
-                                Asignar
+                                Assign
                               </button>
                             </div>
                           </div>
@@ -489,11 +489,11 @@ const AdminPanel = ({ onClose }) => {
           <div className="flex items-start gap-2 text-sm text-gray-600">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="font-medium mb-1">Información sobre roles:</p>
+              <p className="font-medium mb-1">Role information:</p>
               <ul className="space-y-1 text-xs">
-                <li>• <strong>Estudiante:</strong> Puede crear consultas y realizar pagos</li>
-                <li>• <strong>Tutor:</strong> Todo lo de estudiante + recibir consultas y crear propuestas</li>
-                <li>• <strong>Admin:</strong> Control total del sistema</li>
+                <li>- <strong>Student:</strong> Can create consultations and make payments</li>
+                <li>- <strong>Tutor:</strong> Everything a student can do + receive consultations and create proposals</li>
+                <li>- <strong>Admin:</strong> Full system control</li>
               </ul>
             </div>
           </div>
@@ -504,3 +504,4 @@ const AdminPanel = ({ onClose }) => {
 };
 
 export default AdminPanel;
+

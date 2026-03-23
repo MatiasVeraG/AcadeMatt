@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, AlertCircle } from 'lucide-react';
 
 const PaymentModal = ({ isOpen, onClose }) => {
@@ -10,7 +10,7 @@ const PaymentModal = ({ isOpen, onClose }) => {
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <AlertCircle className="w-6 h-6 text-yellow-500" />
-            Enlace de pago no disponible
+            Payment link unavailable
           </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
@@ -18,7 +18,7 @@ const PaymentModal = ({ isOpen, onClose }) => {
         </div>
         <div className="p-6 space-y-4 text-center">
           <p className="text-gray-600">
-            No se pudo generar el enlace de pago. Por favor, comunica al tutor o intenta crear la oferta nuevamente.
+            Could not generate the payment link. Please contact the tutor or try creating the offer again.
           </p>
           <button
             onClick={onClose}
@@ -41,7 +41,7 @@ export default PaymentModal;
         <div className="p-6 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Lock className="w-6 h-6 text-academic-blue" />
-            Pago Seguro
+            Secure Payment
           </h2>
           <button 
             onClick={onClose}
@@ -57,22 +57,22 @@ export default PaymentModal;
           {isSuccess ? (
             <div className="text-center py-8">
               <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4 animate-bounce" />
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">¡Pago Exitoso!</h3>
-              <p className="text-gray-600">Tu consulta ha sido confirmada</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h3>
+              <p className="text-gray-600">Your consultation has been confirmed</p>
             </div>
           ) : (
             <>
               {/* Monto */}
               <div className="bg-gradient-to-br from-academic-blue to-blue-700 rounded-xl p-6 text-white mb-6">
-                <div className="text-sm opacity-90 mb-1">Total a pagar</div>
+                <div className="text-sm opacity-90 mb-1">Total to pay</div>
                 <div className="text-4xl font-bold">${amount?.toFixed(2) || '0.00'}</div>
                 <div className="text-sm opacity-75 mt-2">USD</div>
               </div>
 
-              {/* Método de pago */}
+              {/* Payment method */}
               <div className="mb-6">
                 <label className="text-sm font-semibold text-gray-700 mb-3 block">
-                  Método de pago
+                  Payment method
                 </label>
                 <div className="space-y-3">
                   <button
@@ -85,8 +85,8 @@ export default PaymentModal;
                   >
                     <CreditCard className={`w-6 h-6 ${paymentMethod === 'stripe' ? 'text-academic-blue' : 'text-gray-400'}`} />
                     <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-800">Tarjeta de Crédito/Débito</div>
-                      <div className="text-xs text-gray-500">Procesado por Stripe</div>
+                      <div className="font-semibold text-gray-800">Credit/Debit Card</div>
+                      <div className="text-xs text-gray-500">Processed by Stripe</div>
                     </div>
                   </button>
 
@@ -105,18 +105,18 @@ export default PaymentModal;
                     </div>
                     <div className="flex-1 text-left">
                       <div className="font-semibold text-gray-800">PayPal</div>
-                      <div className="text-xs text-gray-500">Pago rápido y seguro</div>
+                      <div className="text-xs text-gray-500">Fast and secure payment</div>
                     </div>
                   </button>
                 </div>
               </div>
 
-              {/* Información de tarjeta simulada */}
+              {/* Simulated card information */}
               {paymentMethod === 'stripe' && (
                 <div className="space-y-3 mb-6">
                   <input
                     type="text"
-                    placeholder="Número de tarjeta"
+                    placeholder="Card number"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue"
                     defaultValue="4242 4242 4242 4242"
                   />
@@ -137,7 +137,7 @@ export default PaymentModal;
                 </div>
               )}
 
-              {/* Botón de pago */}
+              {/* Bot├│n de pago */}
               <button 
                 onClick={handlePayment}
                 disabled={isProcessing}
@@ -146,12 +146,12 @@ export default PaymentModal;
                 {isProcessing ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Procesando...
+                    Processing...
                   </>
                 ) : (
                   <>
                     <Lock className="w-5 h-5" />
-                    Confirmar Pago
+                    Confirm Payment
                   </>
                 )}
               </button>
@@ -159,9 +159,9 @@ export default PaymentModal;
               <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1">
                   <Lock className="w-3 h-3" />
-                  Encriptado SSL
+                  SSL Encrypted
                 </span>
-                <span>•</span>
+                <span>ΓÇó</span>
                 <span>Pago 100% seguro</span>
               </div>
             </>
@@ -173,3 +173,4 @@ export default PaymentModal;
 };
 
 export default PaymentModal;
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { MessageSquare, Clock, User, Loader2, Plus, BookOpen, Archive } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -14,8 +14,8 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
   const [archivingId, setArchivingId] = useState(null);
 
   const suggestedTopics = [
-    'Cálculo Diferencial', 'Álgebra Lineal', 'Física I',
-    'Química Orgánica', 'Programación en Python', 'Estadística',
+    'C├ílculo Diferencial', '├ülgebra Lineal', 'F├¡sica I',
+    'Qu├¡mica Org├ínica', 'Programaci├│n en Python', 'Estad├¡stica',
   ];
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
       setConversations(all);
       setIsLoading(false);
     }, (error) => {
-      console.error('Error cargando conversaciones:', error);
+      console.error('Error loading conversations:', error);
       setIsLoading(false);
     });
     return () => unsubscribe();
@@ -55,7 +55,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
       onSelectConversation(conversationId);
     } catch (error) {
       console.error('Error creando consulta:', error);
-      alert('Error al crear la consulta. Intenta nuevamente.');
+      alert('Error creating the consultation. Please try again.');
     } finally {
       setIsCreating(false);
     }
@@ -67,7 +67,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
     try {
       await archiveConversation(conversationId);
     } catch (err) {
-      console.error('Error al archivar:', err);
+      console.error('Error archiving:', err);
     } finally {
       setArchivingId(null);
     }
@@ -99,7 +99,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-gray-800">
-              {currentView === 'history' ? 'Historial' : 'Mis Consultas'}
+              {currentView === 'history' ? 'History' : 'My Consultations'}
             </h2>
             <p className="text-sm text-gray-500">
               {visibleConversations.length} consulta{visibleConversations.length !== 1 ? 's' : ''}
@@ -112,7 +112,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-academic-blue to-blue-700 text-white rounded-lg hover:shadow-lg transition-all"
             >
               <Plus className="w-5 h-5" />
-              <span className="font-medium">Nueva Consulta</span>
+              <span className="font-medium">New Consultation</span>
             </button>
           )}
         </div>
@@ -128,11 +128,11 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
             <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-600 font-medium">
-                {currentView === 'history' ? 'No tienes consultas archivadas' : 'No tienes consultas activas'}
+                {currentView === 'history' ? 'You have no archived consultations' : 'You have no active consultations'}
               </p>
               {currentView === 'conversations' && (
                 <p className="text-gray-500 text-sm mt-1">
-                  Haz clic en "Nueva Consulta" para comenzar
+                  Haz clic en "New Consultation" para comenzar
                 </p>
               )}
             </div>
@@ -172,12 +172,12 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                   </div>
                 </button>
 
-                {/* Archive button — only in "Mis Consultas" view */}
+                {/* Archive button ΓÇö only in "My Consultations" view */}
                 {currentView === 'conversations' && (
                   <button
                     onClick={(e) => handleArchive(e, convo.id)}
                     disabled={archivingId === convo.id}
-                    title="Archivar conversación"
+                    title="Archive conversation"
                     className="absolute top-1/2 -translate-y-1/2 right-3 p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
                   >
                     {archivingId === convo.id
@@ -192,7 +192,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
         </div>
       </div>
 
-      {/* Modal Nueva Consulta */}
+      {/* Modal New Consultation */}
       {showNewConsultationModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 max-h-[90vh] overflow-y-auto">
@@ -200,21 +200,21 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-academic-blue to-blue-700 rounded-full mb-4">
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Nueva Consulta</h2>
-              <p className="text-gray-600">Describe tu necesidad académica</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">New Consultation</h2>
+              <p className="text-gray-600">Describe tu necesidad acad├⌐mica</p>
             </div>
 
             <form onSubmit={handleCreateConsultation} className="space-y-6">
               <div>
                 <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
-                  ¿En qué materia necesitas ayuda?
+                  Which subject do you need help with?
                 </label>
                 <input
                   id="subject"
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Ej: Cálculo Diferencial, Física I, etc."
+                  placeholder="Ej: C├ílculo Diferencial, F├¡sica I, etc."
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue"
                   disabled={isCreating}
                   autoFocus
@@ -222,7 +222,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-3">O selecciona un tema común:</p>
+                <p className="text-sm font-medium text-gray-700 mb-3">O selecciona un tema com├║n:</p>
                 <div className="grid grid-cols-2 gap-3">
                   {suggestedTopics.map((topic) => (
                     <button
@@ -259,7 +259,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                 >
                   {isCreating ? (
                     <><Loader2 className="w-5 h-5 animate-spin" /><span>Buscando tutor...</span></>
-                  ) : 'Iniciar Consulta'}
+                  ) : 'Start Consultation'}
                 </button>
               </div>
             </form>
@@ -271,3 +271,4 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
 };
 
 export default StudentDashboard;
+

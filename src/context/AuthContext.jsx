@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   createUserWithEmailAndPassword,
   deleteUser,
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
         await updateProfile(user, { displayName });
       }
 
-      // Guardar información adicional en Firestore
+      // Save informaci├│n adicional en Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         displayName: displayName || null,
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Iniciar sesión
+  // Iniciar sesi├│n
   const login = async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Iniciar sesión con Google
+  // Iniciar sesi├│n con Google
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -202,12 +202,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Enviar email de recuperación de contraseña
+  // Enviar email de recuperaci├│n de contrase├▒a
   const resetPassword = async (email) => {
     await sendPasswordResetEmail(auth, email);
   };
 
-  // Cerrar sesión
+  // Cerrar sesi├│n
   const logout = async () => {
     try {
       // Si es tutor, marcar como no disponible
@@ -228,13 +228,13 @@ export const AuthProvider = ({ children }) => {
     try {
       // Verificar que el usuario actual es admin
       if (userRole !== 'admin') {
-        throw new Error('No tienes permisos para realizar esta acción');
+        throw new Error('You do not have permission to perform this action');
       }
 
-      // Validar que el rol es válido
+      // Validar que el rol es v├ílido
       const validRoles = ['student', 'tutor', 'admin'];
       if (!validRoles.includes(newRole)) {
-        throw new Error('Rol inválido');
+        throw new Error('Invalid role');
       }
 
       // Actualizar rol en Firestore
@@ -250,7 +250,7 @@ export const AuthProvider = ({ children }) => {
 
   // Configurar tutor de respaldo (solo admins)
   const setDefaultTutor = async (tutorId) => {
-    if (userRole !== 'admin') throw new Error('No tienes permisos para realizar esta acción');
+    if (userRole !== 'admin') throw new Error('You do not have permission to perform this action');
     await setDoc(doc(db, 'config', 'settings'), { defaultTutorId: tutorId }, { merge: true });
   };
 
@@ -264,7 +264,7 @@ export const AuthProvider = ({ children }) => {
   const getAllUsers = async () => {
     try {
       if (userRole !== 'admin') {
-        throw new Error('No tienes permisos para realizar esta acción');
+        throw new Error('You do not have permission to perform this action');
       }
 
       const usersCollection = collection(db, 'users');
@@ -288,7 +288,7 @@ export const AuthProvider = ({ children }) => {
   const setAvailability = async (available) => {
     try {
       if (userRole !== 'tutor') {
-        throw new Error('Solo los tutores pueden cambiar su disponibilidad');
+        throw new Error('Only tutors can change their availability');
       }
 
       await setDoc(doc(db, 'users', currentUser.uid), {
@@ -302,14 +302,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Crear nueva conversación
+  // Crear nueva conversaci├│n
   const createConversation = async (subject) => {
     try {
       if (!currentUser) {
-        throw new Error('Debes iniciar sesión');
+        throw new Error('You must sign in');
       }
 
-      // Crear conversación
+      // Crear conversaci├│n
       const conversationData = {
         studentId: currentUser.uid,
         studentName: currentUser.displayName,
@@ -336,9 +336,9 @@ export const AuthProvider = ({ children }) => {
         read: false
       });
 
-      // Asignar tutor por capacidad.
-      // Si falla, marcar la conversación como fallida (el estudiante no tiene
-      // permisos de delete en Firestore, así que usamos update en su lugar).
+      // Assign tutor por capacidad.
+      // Si falla, marcar la conversaci├│n como fallida (el estudiante no tiene
+      // permisos de delete en Firestore, as├¡ que usamos update en su lugar).
       try {
         await assignTutorByCapacity(conversationRef.id);
       } catch (assignError) {
@@ -348,7 +348,7 @@ export const AuthProvider = ({ children }) => {
             failedAt: new Date().toISOString(),
           });
         } catch (cleanupError) {
-          console.error('Error al limpiar conversación huérfana:', cleanupError);
+          console.error('Error al limpiar conversaci├│n hu├⌐rfana:', cleanupError);
         }
         throw assignError;
       }
@@ -359,7 +359,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Asignar tutor por capacidad — delegado al backend (usa Admin SDK)
+  // Assign tutor por capacidad ΓÇö delegado al backend (usa Admin SDK)
   const assignTutorByCapacity = async (conversationId) => {
     try {
       const token = await currentUser.getIdToken();
@@ -375,7 +375,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || 'Error al asignar tutor');
+        throw new Error(err.error || 'Error assigning tutor');
       }
 
       const data = await response.json();
@@ -388,11 +388,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Enviar mensaje en una conversación
+  // Enviar mensaje en una conversaci├│n
   const sendMessage = async (conversationId, text, fileData = null) => {
     try {
       if (!currentUser) {
-        throw new Error('Debes iniciar sesión');
+        throw new Error('You must sign in');
       }
 
       const messageData = {
@@ -412,10 +412,10 @@ export const AuthProvider = ({ children }) => {
 
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), messageData);
 
-      // Update conversation metadata + unread counter — best-effort, not critical
+      // Update conversation metadata + unread counter ΓÇö best-effort, not critical
       try {
         const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
-        const lastText = text || (fileData ? `📎 ${fileData.fileName}` : '');
+        const lastText = text || (fileData ? `≡ƒôÄ ${fileData.fileName}` : '');
         await updateDoc(doc(db, 'conversations', conversationId), {
           lastMessageAt: new Date().toISOString(),
           lastMessageText: lastText.substring(0, 120),
@@ -441,7 +441,7 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // Mover una consulta a "En Proceso" (solo tutor/admin)
+  // Mover una consulta a "In Progress" (solo tutor/admin)
   const moveToInProgress = async (conversationId) => {
     await updateDoc(doc(db, 'conversations', conversationId), { inProgressForTutor: true });
   };
@@ -452,9 +452,9 @@ export const AuthProvider = ({ children }) => {
     await updateDoc(doc(db, 'conversations', conversationId), { [field]: true });
   };
 
-  // Dejar una reseña para una consulta finalizada (una por consulta)
+  // Dejar una rese├▒a para una consulta finalizada (una por consulta)
   const submitReview = async (conversationId, { rating, text, tutorId, tutorName, subject, closingStatus }) => {
-    if (!currentUser) throw new Error('Debes iniciar sesión');
+    if (!currentUser) throw new Error('You must sign in');
     // Prevent duplicate reviews
     await addDoc(collection(db, 'reviews'), {
       conversationId,
@@ -476,7 +476,7 @@ export const AuthProvider = ({ children }) => {
   const getUserConversations = async () => {
     try {
       if (!currentUser) {
-        throw new Error('Debes iniciar sesión');
+        throw new Error('You must sign in');
       }
 
       let conversationsQuery;
@@ -534,10 +534,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Asignar tutor manualmente (solo admins)
+  // Assign tutor manualmente (solo admins)
   const adminAssignTutor = async (conversationId, tutorId) => {
-    if (!currentUser) throw new Error('Debes iniciar sesión');
-    if (userRole !== 'admin') throw new Error('Solo los administradores pueden realizar esta acción');
+    if (!currentUser) throw new Error('You must sign in');
+    if (userRole !== 'admin') throw new Error('Only administrators can perform this action');
     const token = await currentUser.getIdToken();
     const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
     const response = await fetch(`${apiUrl}/api/admin-assign-tutor`, {
@@ -550,7 +550,7 @@ export const AuthProvider = ({ children }) => {
     });
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || 'Error al asignar tutor');
+      throw new Error(err.error || 'Error assigning tutor');
     }
     return response.json();
   };
@@ -558,9 +558,9 @@ export const AuthProvider = ({ children }) => {
   // Crear oferta de pago: llama al backend que genera el checkout en PayPal
   // y persiste la oferta en Firestore.
   const createOffer = async (conversationId, amount, description) => {
-    if (!currentUser) throw new Error('Debes iniciar sesión');
+    if (!currentUser) throw new Error('You must sign in');
     if (userRole !== 'tutor' && userRole !== 'admin') {
-      throw new Error('Solo tutores o admins pueden crear ofertas');
+      throw new Error('Only tutors or admins can create offers');
     }
 
     const token = await currentUser.getIdToken();
@@ -568,7 +568,7 @@ export const AuthProvider = ({ children }) => {
 
     // Fetch conversation to get studentId and subject
     const convDoc = await getDoc(doc(db, 'conversations', conversationId));
-    if (!convDoc.exists()) throw new Error('Conversación no encontrada');
+    if (!convDoc.exists()) throw new Error('Conversaci├│n no encontrada');
     const convData = convDoc.data();
 
     let effectiveTutorId = currentUser.uid;
@@ -597,20 +597,20 @@ export const AuthProvider = ({ children }) => {
         tutorName: effectiveTutorName,
         amount: parseFloat(amount),
         description: description || '',
-        subject: convData.subject || 'Asesoría Académica',
+        subject: convData.subject || 'Asesor├¡a Acad├⌐mica',
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const msg = [errorData.error, errorData.detail].filter(Boolean).join(' — ') || `Error del servidor: ${response.status}`;
+      const msg = [errorData.error, errorData.detail].filter(Boolean).join(' ΓÇö ') || `Server error: ${response.status}`;
       throw new Error(msg);
     }
 
     return response.json(); // { success, offerId, checkoutUrl }
   };
 
-  // Escuchar cambios en autenticación
+  // Escuchar cambios en autenticaci├│n
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (signupInProgressRef.current) {
@@ -701,3 +701,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
