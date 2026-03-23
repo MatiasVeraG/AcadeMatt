@@ -5,7 +5,6 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup,
   signInWithRedirect,
   updateProfile,
   sendPasswordResetEmail,
@@ -96,37 +95,8 @@ export const AuthProvider = ({ children }) => {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-
-      let userCredential;
-      try {
-        userCredential = await signInWithPopup(auth, provider);
-      } catch (popupError) {
-        if (
-          popupError.code === 'auth/popup-blocked' ||
-          popupError.code === 'auth/popup-closed-by-user' ||
-          popupError.code === 'auth/cancelled-popup-request'
-        ) {
-          await signInWithRedirect(auth, provider);
-          return null;
-        }
-        throw popupError;
-      }
-
-      const user = userCredential.user;
-
-      // Google login requires an existing profile document. New users must sign up.
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-
-      if (!userDoc.exists()) {
-        await signOut(auth);
-        const err = new Error('auth/profile-not-found');
-        err.code = 'auth/profile-not-found';
-        err.email = user.email || '';
-        err.displayName = user.displayName || '';
-        throw err;
-      }
-
-      return user;
+      await signInWithRedirect(auth, provider);
+      return null;
     } catch (error) {
       throw error;
     }
@@ -538,6 +508,11 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         const role = await fetchUserRole(user.uid);
         if (!role) {
+          try {
+            sessionStorage.setItem('auth_profile_missing', '1');
+            sessionStorage.setItem('auth_profile_missing_email', user.email || '');
+            sessionStorage.setItem('auth_profile_missing_name', user.displayName || '');
+          } catch (_) {}
           await signOut(auth);
           setCurrentUser(null);
           setUserRole(null);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Lock, User, AlertCircle, Loader2, CheckCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import bgImage from '../../images/BG.png';
@@ -15,6 +15,26 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
   const [resetSent, setResetSent] = useState(false);
 
   const { login, signup, loginWithGoogle, resetPassword } = useAuth();
+
+  useEffect(() => {
+    try {
+      const profileMissing = sessionStorage.getItem('auth_profile_missing') === '1';
+      if (!profileMissing) return;
+
+      const pendingEmail = sessionStorage.getItem('auth_profile_missing_email') || '';
+      const pendingName = sessionStorage.getItem('auth_profile_missing_name') || '';
+
+      setIsLogin(false);
+      if (pendingEmail) setEmail(pendingEmail);
+      if (pendingName) setDisplayName(pendingName);
+      setNotice('Tu cuenta aun no tiene perfil en AcadeMatt. Completa Sign Up para continuar.');
+      setError('');
+
+      sessionStorage.removeItem('auth_profile_missing');
+      sessionStorage.removeItem('auth_profile_missing_email');
+      sessionStorage.removeItem('auth_profile_missing_name');
+    } catch (_) {}
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +58,9 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
         return;
       }
     } catch (err) {
-      console.error(err);
+      if ((err.code || err.message) !== 'auth/profile-not-found') {
+        console.error(err);
+      }
       if ((err.code || err.message) === 'auth/profile-not-found') {
         setIsLogin(false);
         if (err.email) setEmail(err.email);
@@ -60,13 +82,12 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
     setNotice('');
     setLoading(true);
     try {
-      const result = await loginWithGoogle();
-      if (result === null) {
-        return;
-      }
-      onAuthSuccess();
+      await loginWithGoogle();
+      return;
     } catch (err) {
-      console.error(err);
+      if ((err.code || err.message) !== 'auth/profile-not-found') {
+        console.error(err);
+      }
       if ((err.code || err.message) === 'auth/profile-not-found') {
         setIsLogin(false);
         if (err.email) setEmail(err.email);
