@@ -39,6 +39,16 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       }
     } catch (err) {
       console.error(err);
+      if ((err.code || err.message) === 'auth/profile-not-found') {
+        setIsLogin(false);
+        if (err.email) setEmail(err.email);
+        if (!displayName && err.email) {
+          setDisplayName(err.email.split('@')[0]);
+        }
+        setNotice('No encontramos tu perfil en AcadeMatt. Completa Sign Up para activar tu cuenta.');
+        setError('');
+        return;
+      }
       setError(getErrorMessage(err.code || err.message));
     } finally {
       setLoading(false);
@@ -57,6 +67,14 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       onAuthSuccess();
     } catch (err) {
       console.error(err);
+      if ((err.code || err.message) === 'auth/profile-not-found') {
+        setIsLogin(false);
+        if (err.email) setEmail(err.email);
+        if (err.displayName) setDisplayName(err.displayName);
+        setNotice('Tu cuenta de Google aun no tiene perfil en AcadeMatt. Completa Sign Up para continuar.');
+        setError('');
+        return;
+      }
       setError(getErrorMessage(err.code || err.message));
     } finally {
       setLoading(false);
@@ -75,6 +93,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
       'auth/unauthorized-domain': 'Este dominio no esta autorizado en Firebase Auth. Agrega academatt.com en Authorized domains.',
       'auth/operation-not-allowed': 'Google Sign-In no esta habilitado en Firebase Authentication.',
       'auth/email-not-verified': 'Debes verificar tu correo antes de iniciar sesion. Te reenviamos el email de activacion.',
+      'auth/profile-not-found': 'No encontramos tu usuario en AcadeMatt. Debes completar Sign Up primero.',
     };
     return errors[code] || 'An error occurred. Please try again.';
   };

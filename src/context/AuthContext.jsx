@@ -76,6 +76,15 @@ export const AuthProvider = ({ children }) => {
         throw err;
       }
 
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        await signOut(auth);
+        const err = new Error('auth/profile-not-found');
+        err.code = 'auth/profile-not-found';
+        err.email = user.email || email;
+        throw err;
+      }
+
       return userCredential.user;
     } catch (error) {
       throw error;
@@ -105,20 +114,16 @@ export const AuthProvider = ({ children }) => {
 
       const user = userCredential.user;
 
-      // Verificar si el usuario ya existe en Firestore
+      // Google login requires an existing profile document. New users must sign up.
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
+
       if (!userDoc.exists()) {
-        // Si es nuevo usuario, crear documento
-        await setDoc(doc(db, 'users', user.uid), {
-          email: user.email,
-          displayName: user.displayName,
-          role: 'student',
-          createdAt: new Date().toISOString(),
-          photoURL: user.photoURL,
-          available: null,
-          lastActive: new Date().toISOString()
-        });
+        await signOut(auth);
+        const err = new Error('auth/profile-not-found');
+        err.code = 'auth/profile-not-found';
+        err.email = user.email || '';
+        err.displayName = user.displayName || '';
+        throw err;
       }
 
       return user;
@@ -443,10 +448,10 @@ export const AuthProvider = ({ children }) => {
       if (userDoc.exists()) {
         return userDoc.data().role;
       }
-      return 'student'; // Default
+      return null;
     } catch (error) {
       console.error('Error fetching user role:', error);
-      return 'student';
+      return null;
     }
   };
 
@@ -532,6 +537,13 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(user);
       if (user) {
         const role = await fetchUserRole(user.uid);
+        if (!role) {
+          await signOut(auth);
+          setCurrentUser(null);
+          setUserRole(null);
+          setLoading(false);
+          return;
+        }
         setUserRole(role);
       } else {
         setUserRole(null);
