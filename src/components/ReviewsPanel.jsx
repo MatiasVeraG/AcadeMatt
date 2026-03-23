@@ -30,7 +30,7 @@ const ReviewsPanel = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // NOTE: no compound orderBy+where ΓÇö just fetch latest 50 reviews, sort client-side
+    // NOTE: no compound orderBy+where — just fetch latest 50 reviews, sort client-side
     const q = query(collection(db, 'reviews'), orderBy('createdAt', 'desc'), limit(50));
     const unsub = onSnapshot(q,
       snap => {
@@ -96,8 +96,8 @@ const ReviewsPanel = ({ onClose }) => {
                       <div>
                         <p className="text-sm font-semibold text-gray-800">{r.studentName}</p>
                         <p className="text-xs text-gray-400">
-                          {r.subject && <span className="mr-1">{r.subject} ┬╖</span>}
-                          {r.tutorName && <span>con {r.tutorName} ┬╖ </span>}
+                          {r.subject && <span className="mr-1">{r.subject} ·</span>}
+                          {r.tutorName && <span>con {r.tutorName} · </span>}
                           {timeAgo(r.createdAt)}
                         </p>
                       </div>

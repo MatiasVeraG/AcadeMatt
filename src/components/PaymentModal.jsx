@@ -137,7 +137,7 @@ export default PaymentModal;
                 </div>
               )}
 
-              {/* Bot├│n de pago */}
+              {/* Payment button */}
               <button 
                 onClick={handlePayment}
                 disabled={isProcessing}
@@ -161,8 +161,8 @@ export default PaymentModal;
                   <Lock className="w-3 h-3" />
                   SSL Encrypted
                 </span>
-                <span>ΓÇó</span>
-                <span>Pago 100% seguro</span>
+                <span>•</span>
+                <span>100% secure payment</span>
               </div>
             </>
           )}

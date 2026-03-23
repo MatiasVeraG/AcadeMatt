@@ -8,12 +8,12 @@ const StartConsultation = ({ onConsultationCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
 
   const suggestedTopics = [
-    'C├ílculo Diferencial',
-    '├ülgebra Lineal',
-    'F├¡sica I',
-    'Qu├¡mica Org├ínica',
-    'Programaci├│n en Python',
-    'Estad├¡stica'
+    'Differential Calculus',
+    'Linear Algebra',
+    'Physics I',
+    'Organic Chemistry',
+    'Python Programming',
+    'Statistics'
   ];
 
   const handleSubmit = async (e) => {
@@ -48,7 +48,7 @@ const StartConsultation = ({ onConsultationCreated }) => {
             Start New Consultation
           </h2>
           <p className="text-gray-600">
-            Describe tu necesidad acad├⌐mica y te conectaremos con el mejor tutor disponible
+            Describe your academic need and we will connect you with the best available tutor
           </p>
         </div>
 
@@ -72,7 +72,7 @@ const StartConsultation = ({ onConsultationCreated }) => {
           {/* Suggested Topics */}
           <div>
             <p className="text-sm font-medium text-gray-700 mb-3">
-              O selecciona un tema com├║n:
+              Or choose a common topic:
             </p>
             <div className="grid grid-cols-2 gap-3">
               {suggestedTopics.map((topic) => (
@@ -117,8 +117,8 @@ const StartConsultation = ({ onConsultationCreated }) => {
         {/* Info Box */}
         <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
           <p className="text-sm text-gray-700">
-            <span className="font-semibold">≡ƒñû Smart System:</span> Usamos asignaci├│n por capacidad para conectarte 
-            con el tutor m├ís disponible, garantizando respuestas r├ípidas.
+            <span className="font-semibold">🤖 Smart System:</span> We use capacity-based assignment to connect you
+            with the most available tutor, ensuring quick responses.
           </p>
         </div>
       </div>

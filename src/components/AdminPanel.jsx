@@ -154,9 +154,9 @@ const AdminPanel = ({ onClose }) => {
   };
 
   const getRoleIcon = (role) => {
-    if (role === 'admin') return '≡ƒææ';
-    if (role === 'tutor') return '≡ƒæ¿ΓÇì≡ƒÅ½';
-    return '≡ƒÄô';
+    if (role === 'admin') return '👑';
+    if (role === 'tutor') return '👨‍🏫';
+    return '🎓';
   };
 
   // Verificar que el usuario actual es admin
@@ -243,7 +243,7 @@ const AdminPanel = ({ onClose }) => {
             </div>
           )}
 
-          {/* ΓöÇΓöÇ USERS TAB ΓöÇΓöÇ */}
+          {/* USERS TAB */}
           {tab === 'users' && <>
 
           {/* Default Tutor Selector */}
@@ -261,10 +261,10 @@ const AdminPanel = ({ onClose }) => {
                 onChange={(e) => setSelectedDefault(e.target.value)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
               >
-                <option value="">ΓÇö No backup tutor ΓÇö</option>
+                <option value="">— No backup tutor —</option>
                 {users.filter(u => u.role === 'tutor' || u.role === 'admin').map(u => (
                   <option key={u.id} value={u.id}>
-                    {u.displayName || u.email}{u.id === defaultTutorId ? ' Γ¡É (actual)' : ''}
+                    {u.displayName || u.email}{u.id === defaultTutorId ? ' ⭐ (actual)' : ''}
                   </option>
                 ))}
               </select>
@@ -351,9 +351,9 @@ const AdminPanel = ({ onClose }) => {
                         disabled={updating === user.id || user.id === currentUser.uid}
                         className={`px-3 py-2 border rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed ${getRoleBadge(user.role).color}`}
                       >
-                        <option value="student">≡ƒÄô Student</option>
-                        <option value="tutor">≡ƒæ¿ΓÇì≡ƒÅ½ Tutor</option>
-                        <option value="admin">≡ƒææ Admin</option>
+                        <option value="student">🎓 Student</option>
+                        <option value="tutor">👨‍🏫 Tutor</option>
+                        <option value="admin">👑 Admin</option>
                       </select>
                       {updating === user.id && (
                         <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
@@ -366,7 +366,7 @@ const AdminPanel = ({ onClose }) => {
           )}
           </> /* end users tab */}
 
-          {/* ΓöÇΓöÇ CONVERSATIONS TAB ΓöÇΓöÇ */}
+          {/* CONVERSATIONS TAB */}
           {tab === 'conversations' && (
             <>
               {/* Filters */}

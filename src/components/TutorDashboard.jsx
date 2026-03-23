@@ -9,7 +9,7 @@ import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import AvailabilityToggle from './AvailabilityToggle';
 
-// ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Helpers
 function formatRelative(ts) {
   if (!ts) return '';
   const date = ts?.toDate ? ts.toDate() : new Date(ts);
@@ -19,11 +19,11 @@ function formatRelative(ts) {
   return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
-// ΓöÇΓöÇ Archive + Close Modal ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Archive + close modal
 const CLOSING_OPTIONS = [
-  { status: 'successful',   label: 'Exitosa',      desc: 'Se entreg├│ todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
+  { status: 'successful',   label: 'Exitosa',      desc: 'Se entregó todo en tiempo y forma',  Icon: CheckCircle,  color: 'text-green-600', hover: 'hover:bg-green-50 border-green-200' },
   { status: 'failed',       label: 'Fallida',      desc: 'No se pudo entregar lo acordado',    Icon: XCircle,      color: 'text-red-600',   hover: 'hover:bg-red-50 border-red-200'     },
-  { status: 'not_realized', label: 'Not completed', desc: 'Sin acuerdo ΓÇö sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
+  { status: 'not_realized', label: 'Not completed', desc: 'Sin acuerdo — sin pago',             Icon: MinusCircle,  color: 'text-gray-500',  hover: 'hover:bg-gray-50 border-gray-200'   },
 ];
 
 function ArchiveModal({ conversationId, onCancel, onArchived }) {
@@ -78,7 +78,7 @@ function ArchiveModal({ conversationId, onCancel, onArchived }) {
   );
 }
 
-// ΓöÇΓöÇ Conversation Card ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Conversation card
 function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
   const statusColor =
     conv.status === 'assigned'  ? 'bg-green-100 text-green-700' :
@@ -147,7 +147,7 @@ function ConvCard({ conv, onOpen, onMoveToInProgress, onArchiveRequest }) {
   );
 }
 
-// ΓöÇΓöÇ All Payments Panel (admin only) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// All Payments Panel (admin only)
 function AllPaymentsPanel() {
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -206,7 +206,7 @@ function AllPaymentsPanel() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-gray-800 truncate">{p.subject || 'Consulta'}</p>
               <p className="text-xs text-gray-500">
-                {p.studentName || 'Estudiante'} ΓåÆ {p.tutorName || 'Tutor'}
+                {p.studentName || 'Estudiante'} → {p.tutorName || 'Tutor'}
               </p>
               <p className="text-xs text-gray-400">{formatDate(p.paidAt)}</p>
             </div>
@@ -221,7 +221,7 @@ function AllPaymentsPanel() {
   );
 }
 
-// ΓöÇΓöÇ Tab configurations ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Tab configurations
 const TUTOR_TABS = [
   { id: 'consultas',  label: 'Consultas',  dotColor: 'bg-blue-500'   },
   { id: 'inprogress', label: 'In Progress', dotColor: 'bg-orange-500' },
@@ -234,7 +234,7 @@ const ADMIN_TABS = [
   { id: 'historial',  label: 'History',  dotColor: 'bg-gray-400'   },
 ];
 
-// ΓöÇΓöÇ Main Component ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// Main component
 const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' }) => {
   const { currentUser, userRole, moveToInProgress } = useAuth();
   const [conversations, setConversations] = useState([]);
@@ -389,7 +389,7 @@ const TutorDashboard = ({ onSelectConversation, currentView = 'conversations' })
             {tabConvs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-gray-300">
                 <MessageSquare className="w-10 h-10 mb-2" />
-                <p className="text-sm">No consultations en esta secci├│n</p>
+                <p className="text-sm">No consultations in this section</p>
               </div>
             ) : (
               tabConvs.map(conv => (

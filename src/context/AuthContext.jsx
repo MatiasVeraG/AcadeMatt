@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
         await updateProfile(user, { displayName });
       }
 
-      // Save informaci├│n adicional en Firestore
+      // Save additional information in Firestore
       await setDoc(doc(db, 'users', user.uid), {
         email: user.email,
         displayName: displayName || null,
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Iniciar sesi├│n
+  // Sign in
   const login = async (email, password) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Iniciar sesi├│n con Google
+  // Sign in with Google
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -202,12 +202,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Enviar email de recuperaci├│n de contrase├▒a
+  // Send password recovery email
   const resetPassword = async (email) => {
     await sendPasswordResetEmail(auth, email);
   };
 
-  // Cerrar sesi├│n
+  // Sign out
   const logout = async () => {
     try {
       // Si es tutor, marcar como no disponible
@@ -231,7 +231,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('You do not have permission to perform this action');
       }
 
-      // Validar que el rol es v├ílido
+      // Validate role value
       const validRoles = ['student', 'tutor', 'admin'];
       if (!validRoles.includes(newRole)) {
         throw new Error('Invalid role');
@@ -302,14 +302,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Crear nueva conversaci├│n
+  // Create new conversation
   const createConversation = async (subject) => {
     try {
       if (!currentUser) {
         throw new Error('You must sign in');
       }
 
-      // Crear conversaci├│n
+      // Create conversation
       const conversationData = {
         studentId: currentUser.uid,
         studentName: currentUser.displayName,
@@ -337,8 +337,8 @@ export const AuthProvider = ({ children }) => {
       });
 
       // Assign tutor por capacidad.
-      // Si falla, marcar la conversaci├│n como fallida (el estudiante no tiene
-      // permisos de delete en Firestore, as├¡ que usamos update en su lugar).
+      // If it fails, mark conversation as failed (student has no delete permission
+      // in Firestore, so we use update instead).
       try {
         await assignTutorByCapacity(conversationRef.id);
       } catch (assignError) {
@@ -348,7 +348,7 @@ export const AuthProvider = ({ children }) => {
             failedAt: new Date().toISOString(),
           });
         } catch (cleanupError) {
-          console.error('Error al limpiar conversaci├│n hu├⌐rfana:', cleanupError);
+          console.error('Error cleaning orphan conversation:', cleanupError);
         }
         throw assignError;
       }
@@ -359,7 +359,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Assign tutor por capacidad ΓÇö delegado al backend (usa Admin SDK)
+  // Assign tutor by capacity — delegated to backend (uses Admin SDK)
   const assignTutorByCapacity = async (conversationId) => {
     try {
       const token = await currentUser.getIdToken();
@@ -388,7 +388,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Enviar mensaje en una conversaci├│n
+  // Send message in a conversation
   const sendMessage = async (conversationId, text, fileData = null) => {
     try {
       if (!currentUser) {
@@ -412,10 +412,10 @@ export const AuthProvider = ({ children }) => {
 
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), messageData);
 
-      // Update conversation metadata + unread counter ΓÇö best-effort, not critical
+      // Update conversation metadata + unread counter — best-effort, not critical
       try {
         const recipientUnreadField = userRole === 'student' ? 'tutorUnread' : 'studentUnread';
-        const lastText = text || (fileData ? `≡ƒôÄ ${fileData.fileName}` : '');
+        const lastText = text || (fileData ? `📎 ${fileData.fileName}` : '');
         await updateDoc(doc(db, 'conversations', conversationId), {
           lastMessageAt: new Date().toISOString(),
           lastMessageText: lastText.substring(0, 120),
@@ -452,7 +452,7 @@ export const AuthProvider = ({ children }) => {
     await updateDoc(doc(db, 'conversations', conversationId), { [field]: true });
   };
 
-  // Dejar una rese├▒a para una consulta finalizada (una por consulta)
+  // Leave a review for a finished consultation (one per conversation)
   const submitReview = async (conversationId, { rating, text, tutorId, tutorName, subject, closingStatus }) => {
     if (!currentUser) throw new Error('You must sign in');
     // Prevent duplicate reviews
@@ -534,7 +534,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Assign tutor manualmente (solo admins)
+  // Assign tutor manually (admins only)
   const adminAssignTutor = async (conversationId, tutorId) => {
     if (!currentUser) throw new Error('You must sign in');
     if (userRole !== 'admin') throw new Error('Only administrators can perform this action');
@@ -568,7 +568,7 @@ export const AuthProvider = ({ children }) => {
 
     // Fetch conversation to get studentId and subject
     const convDoc = await getDoc(doc(db, 'conversations', conversationId));
-    if (!convDoc.exists()) throw new Error('Conversaci├│n no encontrada');
+    if (!convDoc.exists()) throw new Error('Conversation not found');
     const convData = convDoc.data();
 
     let effectiveTutorId = currentUser.uid;
@@ -597,20 +597,20 @@ export const AuthProvider = ({ children }) => {
         tutorName: effectiveTutorName,
         amount: parseFloat(amount),
         description: description || '',
-        subject: convData.subject || 'Asesor├¡a Acad├⌐mica',
+        subject: convData.subject || 'Academic Tutoring',
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const msg = [errorData.error, errorData.detail].filter(Boolean).join(' ΓÇö ') || `Server error: ${response.status}`;
+      const msg = [errorData.error, errorData.detail].filter(Boolean).join(' — ') || `Server error: ${response.status}`;
       throw new Error(msg);
     }
 
     return response.json(); // { success, offerId, checkoutUrl }
   };
 
-  // Escuchar cambios en autenticaci├│n
+  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (signupInProgressRef.current) {

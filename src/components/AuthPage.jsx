@@ -222,7 +222,7 @@ const AuthPage = ({ onAuthSuccess, onBack }) => {
             </div>
           )}
 
-          {/* ΓöÇΓöÇ Forgot Password Flow ΓöÇΓöÇ */}
+          {/* Forgot Password Flow */}
           {isForgotPassword ? (
             resetSent ? (
               <div className="flex flex-col items-center gap-6 text-center">

@@ -14,8 +14,8 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
   const [archivingId, setArchivingId] = useState(null);
 
   const suggestedTopics = [
-    'C├ílculo Diferencial', '├ülgebra Lineal', 'F├¡sica I',
-    'Qu├¡mica Org├ínica', 'Programaci├│n en Python', 'Estad├¡stica',
+    'Differential Calculus', 'Linear Algebra', 'Physics I',
+    'Organic Chemistry', 'Python Programming', 'Statistics',
   ];
 
   useEffect(() => {
@@ -131,9 +131,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                 {currentView === 'history' ? 'You have no archived consultations' : 'You have no active consultations'}
               </p>
               {currentView === 'conversations' && (
-                <p className="text-gray-500 text-sm mt-1">
-                  Haz clic en "New Consultation" para comenzar
-                </p>
+                <p className="text-gray-500 text-sm mt-1">Click "New Consultation" to get started</p>
               )}
             </div>
           ) : (
@@ -172,7 +170,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                   </div>
                 </button>
 
-                {/* Archive button ΓÇö only in "My Consultations" view */}
+                {/* Archive button — only in "My Consultations" view */}
                 {currentView === 'conversations' && (
                   <button
                     onClick={(e) => handleArchive(e, convo.id)}
@@ -201,7 +199,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                 <MessageSquare className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">New Consultation</h2>
-              <p className="text-gray-600">Describe tu necesidad acad├⌐mica</p>
+              <p className="text-gray-600">Describe your academic need</p>
             </div>
 
             <form onSubmit={handleCreateConsultation} className="space-y-6">
@@ -214,7 +212,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Ej: C├ílculo Diferencial, F├¡sica I, etc."
+                  placeholder="E.g. Differential Calculus, Physics I, etc."
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue"
                   disabled={isCreating}
                   autoFocus
@@ -222,7 +220,7 @@ const StudentDashboard = ({ onSelectConversation, currentView = 'conversations' 
               </div>
 
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-3">O selecciona un tema com├║n:</p>
+                <p className="text-sm font-medium text-gray-700 mb-3">Or choose a common topic:</p>
                 <div className="grid grid-cols-2 gap-3">
                   {suggestedTopics.map((topic) => (
                     <button
