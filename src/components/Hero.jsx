@@ -43,7 +43,7 @@ const Hero = ({ onStartConsultation }) => {
             className="font-bold leading-[1.267] text-[66px] text-center text-white tracking-[-1.98px] max-w-[823px]"
             style={{ fontFamily: "'Poppins', sans-serif" }}
           >
-            Your academic success is just a meet away
+            Back to Basics.
           </p>
 
           {/* Subtitle */}
@@ -51,7 +51,7 @@ const Hero = ({ onStartConsultation }) => {
             className="font-normal leading-[1.587] text-[20px] text-center text-white tracking-[-0.6px] max-w-[710px]"
             style={{ fontFamily: "'Source Sans 3', sans-serif" }}
           >
-            Personalized 1-on-1 math and technical support. Book a session, connect on Google Meet, and bridge the gap between "stuck" and "solved."
+            Making the toughest subjects easy to understand.
           </p>
 
           {/* CTA buttons */}
